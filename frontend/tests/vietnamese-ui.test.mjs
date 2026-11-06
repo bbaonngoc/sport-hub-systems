@@ -1,0 +1,459 @@
+import assert from 'node:assert/strict'
+import { existsSync, readFileSync } from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+import vm from 'node:vm'
+import test from 'node:test'
+import ts from 'typescript'
+import * as React from 'react'
+import * as jsxRuntime from 'react/jsx-runtime'
+import { renderToStaticMarkup } from 'react-dom/server'
+
+const root = path.resolve(fileURLToPath(new URL('..', import.meta.url)))
+const compiled = new Map()
+function application({
+  resources = {},
+  fetch = async () => {
+    throw Error('Unexpected request')
+  },
+  sessionStorage,
+  stubs: extraStubs = {},
+} = {}) {
+  const cache = new Map()
+  const stubs = {
+    react: React,
+    'react/jsx-runtime': jsxRuntime,
+    'next/link': { default: 'a' },
+    'next/image': { default: 'img' },
+    'next/navigation': { useRouter: () => ({ push() {} }) },
+    '@/lib/auth-context': { useAuth: () => ({ user: { id: 'nhan-vien', roles: ['STAFF'] } }) },
+    '@/lib/use-api': {
+      useApi: (url) => ({ data: null, error: '', loading: false, reload() {}, ...resources[url] }),
+    },
+    '@/features/auth/require-auth': { RequireAuth: ({ children }) => children },
+    '@/components/ui/button': { Button: 'button' },
+    '@/components/ui/input': { Input: 'input' },
+    './account-list': { AdminNav: () => null },
+    'lucide-react': new Proxy({}, { get: () => () => null }),
+    ...extraStubs,
+  }
+  function load(relative) {
+    const file = path.resolve(root, relative)
+    if (cache.has(file)) return cache.get(file)
+    const exports = {}
+    cache.set(file, exports)
+    if (!compiled.has(file))
+      compiled.set(
+        file,
+        ts.transpileModule(readFileSync(file, 'utf8'), {
+          compilerOptions: {
+            module: ts.ModuleKind.CommonJS,
+            jsx: ts.JsxEmit.ReactJSX,
+            target: ts.ScriptTarget.ES2022,
+          },
+        }).outputText,
+      )
+    vm.runInNewContext(
+      compiled.get(file),
+      {
+        exports,
+        fetch,
+        Headers,
+        FormData,
+        Response,
+        Request,
+        URL,
+        URLSearchParams,
+        // A stale English preference must not switch part of this Vietnamese-only UI back to English.
+        window: {},
+        localStorage: { getItem: () => 'en' },
+        ...(sessionStorage ? { sessionStorage } : {}),
+        require(name) {
+          if (Object.hasOwn(stubs, name)) return stubs[name]
+          let resolved = name.startsWith('@/')
+            ? path.resolve(root, name.slice(2))
+            : path.resolve(path.dirname(file), name)
+          if (!existsSync(resolved)) resolved += existsSync(resolved + '.ts') ? '.ts' : '.tsx'
+          return load(path.relative(root, resolved))
+        },
+      },
+      { filename: file },
+    )
+    return exports
+  }
+  return {
+    load,
+    render: (component, props = {}) => renderToStaticMarkup(React.createElement(component, props)),
+  }
+}
+
+test('the screenshot refund-policy error is Vietnamese at the real API boundary, with wire metadata intact', async () => {
+  const app = application({
+    fetch: async () =>
+      Response.json(
+        {
+          message:
+            'The Owner must configure the facility refund policy before accepting new bookings',
+          code: 'CONFLICT',
+          details: { reason: 'REFUND_POLICY_NOT_CONFIGURED', facilityId: 'co-so' },
+        },
+        { status: 409 },
+      ),
+  })
+  const client = app.load('lib/api.ts')
+  await assert.rejects(client.api('/bookings/holds', { method: 'POST', body: '{}' }), (failure) => {
+    assert.equal(
+      failure.message,
+      'Chủ cơ sở cần cấu hình chính sách hoàn tiền trước khi nhận lượt đặt mới.',
+    )
+    assert.equal(failure.status, 409)
+    assert.equal(failure.code, 'CONFLICT')
+    assert.equal(failure.details.reason, 'REFUND_POLICY_NOT_CONFIGURED')
+    return true
+  })
+})
+
+test('group creation explains the configured lead time using the real conflict response code', async () => {
+  for (const hours of [2, 3]) {
+    const app = application({
+      fetch: async () =>
+        Response.json(
+          {
+            message: `Group booking requires at least ${hours} hours before play`,
+            code: 'COMMON-002',
+          },
+          { status: 409 },
+        ),
+    })
+    await assert.rejects(
+      app.load('lib/api.ts').api('/groups', { method: 'POST', body: '{}' }),
+      (failure) => {
+        assert.equal(
+          failure.message,
+          `Đặt sân theo nhóm cần được tạo trước giờ chơi ít nhất ${hours} giờ. Vui lòng chọn giờ chơi muộn hơn hoặc chuyển sang đặt cá nhân, thanh toán toàn bộ.`,
+        )
+        assert.equal(failure.status, 409)
+        assert.equal(failure.code, 'COMMON-002')
+        return true
+      },
+    )
+  }
+  assert.match(
+    application()
+      .load('lib/error-translator.ts')
+      .translateError('Group booking requires at least 15 minutes before play', {
+        code: 'COMMON-002',
+      }),
+    /ít nhất 15 phút/,
+  )
+  assert.equal(
+    application()
+      .load('lib/error-translator.ts')
+      .translateError('Group minimum booking lead time elapsed during creation', {
+        code: 'COMMON-002',
+      }),
+    'Không còn đủ thời gian trước giờ chơi để tạo nhóm. Vui lòng chọn giờ chơi muộn hơn hoặc chuyển sang đặt cá nhân, thanh toán toàn bộ.',
+  )
+})
+
+test('validation, permissions, dynamic limits and unknown server errors cannot leak English', async () => {
+  const app = application({
+    fetch: async () =>
+      Response.json(
+        {
+          message: 'Unmapped English server failure',
+          code: 'VALIDATION_ERROR',
+          fieldErrors: [
+            { field: 'guestName', message: 'must not be blank' },
+            { field: 'guestPhone', message: 'size must be between 8 and 20' },
+          ],
+        },
+        { status: 400 },
+      ),
+  })
+  const { translateError } = app.load('lib/error-translator.ts')
+  assert.equal(
+    translateError('Missing facility permission: BOOKING_REFUND'),
+    'Bạn chưa có quyền thực hiện thao tác này tại cơ sở: Xử lý khoản hoàn đã ghi nhận.',
+  )
+  assert.equal(
+    translateError('Slot is not eligible: BOOKED'),
+    'Khung giờ không đủ điều kiện đặt: Khung giờ đã có người đặt',
+  )
+  assert.match(
+    translateError("Parameter 'bookingId' must be of type UUID"),
+    /Mã lượt đặt không đúng định dạng/,
+  )
+  assert.match(translateError('Unmapped English server failure'), /^Không thể thực hiện yêu cầu/)
+  assert.match(translateError('constructor'), /^Không thể thực hiện yêu cầu/)
+  assert.equal(translateError('Lý do do khách nhập'), 'Lý do do khách nhập')
+  assert.equal(translateError('My own note', { preserveUnknown: true }), 'My own note')
+  await assert.rejects(
+    app.load('lib/api.ts').api('/bookings/holds', { method: 'POST' }),
+    (failure) => {
+      assert.equal(failure.message, 'Thông tin không hợp lệ. Vui lòng kiểm tra lại.')
+      assert.equal(failure.fieldErrors[0].field, 'guestName')
+      assert.equal(failure.fieldErrors[0].message, 'Thông tin này không được để trống.')
+      assert.equal(failure.fieldErrors[1].message, 'Độ dài phải từ 8 đến 20 ký tự.')
+      return true
+    },
+  )
+})
+
+test('the real schedule displays the translated policy error and Vietnamese timezone while keeping slot state', () => {
+  const app = application({
+    resources: {
+      '/facilities/co-so': { data: { name: 'Cơ sở thử nghiệm', timezone: 'Asia/Ho_Chi_Minh' } },
+      '/facilities/co-so/courts': { data: [{ id: 'san', name: 'Sân 1' }] },
+      '/bookings/availability?courtId=san&date=2026-10-23': {
+        data: {
+          slots: [
+            {
+              startsAt: '2026-10-23T06:00:00+07:00',
+              endsAt: '2026-10-23T07:00:00+07:00',
+              state: 'AVAILABLE',
+              amount: 120000,
+              currency: 'VND',
+            },
+          ],
+        },
+        error: 'Chủ cơ sở cần cấu hình chính sách hoàn tiền trước khi nhận lượt đặt mới.',
+      },
+    },
+  })
+  const html = app.render(app.load('features/discovery/availability-page.tsx').AvailabilityPage, {
+    facilityId: 'co-so',
+    courtId: 'san',
+    initialDate: '2026-10-23',
+  })
+  assert.match(html, /Chọn khung giờ chưa giữ chỗ; giờ theo giờ Việt Nam \(UTC\+7\)/)
+  assert.match(html, /role="alert"[^>]*>Chủ cơ sở cần cấu hình/)
+  assert.match(html, /Còn trống/)
+  assert.doesNotMatch(html, /The Owner|Asia\/Ho_Chi_Minh|\bslot\b/)
+})
+
+test('payment monitor asks for a facility before loading any transaction', () => {
+  const app = application({
+    resources: {
+      '/admin/payments': { data: [{ id: 'khong-duoc-tai', providerReference: 'REF-ALL' }] },
+    },
+  })
+  const html = app.render(app.load('features/admin/payment-monitor.tsx').PaymentMonitor)
+  assert.match(html, /Chọn cơ sở cần giám sát/)
+  assert.match(html, /placeholder="Nhập tên hoặc mã cơ sở"/)
+  assert.doesNotMatch(html, /REF-ALL|name="status"/)
+})
+
+test('payment filters and records display Vietnamese while submitting original status values', () => {
+  const app = application({
+    sessionStorage: {
+      getItem: () => JSON.stringify({ id: 'co-so-1', name: 'Sân Cầu Giấy', status: 'ACTIVE' }),
+    },
+    resources: {
+      '/admin/payments?facilityId=co-so-1': {
+        data: [
+          {
+            id: 'thanh-toan',
+            bookingId: 'luot-dat',
+            providerReference: 'REF-123',
+            purpose: 'TRANSFER',
+            status: 'SUCCESS',
+            amount: 120000,
+            currency: 'VND',
+          },
+        ],
+      },
+    },
+  })
+  const html = app.render(app.load('features/admin/payment-monitor.tsx').PaymentMonitor)
+  assert.match(html, /Sân Cầu Giấy/)
+  assert.match(html, />Đổi cơ sở</)
+  assert.match(html, /value="PENDING">Chờ thanh toán/)
+  assert.match(html, /value="SUCCESS">Thành công/)
+  assert.match(html, /value="TRANSFER">Chuyển nhượng/)
+  assert.match(html, /Chuyển nhượng · Thành công/)
+  assert.match(html, /REF-123/)
+  assert.doesNotMatch(html, />SUCCESS<|>TRANSFER</)
+})
+
+test('new direct booking explains full resale proceeds instead of advertising the buyer cancellation percentage', () => {
+  const app = application({
+    resources: {
+      '/facilities/co-so/refund-policy': { data: { configured: true, rateBps: 9500 } },
+    },
+  })
+  const html = app.render(app.load('features/discovery/availability-page.tsx').AvailabilityPage, {
+    facilityId: 'co-so',
+    courtId: 'san',
+    initialDate: '2026-10-26',
+  })
+  assert.match(html, /không được hoàn tiền khi khách tự hủy/)
+  assert.match(html, /100% giá chuyển nhượng đã chốt/)
+  assert.match(html, /mất toàn bộ tiền đã trả/)
+  assert.doesNotMatch(html, /95%|Tỷ lệ hoàn tiền khi hủy hợp lệ/)
+})
+
+test('history records translate keys, booleans and enums without rewriting customer names or identifiers', () => {
+  const app = application()
+  const html = app.render(app.load('components/record-details.tsx').RecordDetails, {
+    value: {
+      bookingId: 'BOOKING-123',
+      status: 'CHECKED_IN',
+      source: 'OFFLINE_COUNTER',
+      roles: ['OWNER', 'STAFF'],
+      active: true,
+      guestName: 'Alice Brown',
+      reason: 'Customer cancelled unpaid hold',
+    },
+  })
+  assert.match(html, /Mã lượt đặt/)
+  assert.match(html, /BOOKING-123/)
+  assert.match(html, /Đang chơi/)
+  assert.match(html, /Đặt tại quầy/)
+  assert.match(html, /Chủ cơ sở/)
+  assert.match(html, /Nhân viên/)
+  assert.match(html, />Có</)
+  assert.match(html, /Alice Brown/)
+  assert.match(html, /Khách hủy lượt giữ chỗ chưa thanh toán/)
+  assert.doesNotMatch(html, /CHECKED_IN|OFFLINE_COUNTER|>OWNER<|>STAFF<|>true</)
+})
+
+test('booking policy notice removes the entire obsolete resale refund block', () => {
+  const app = application()
+  const html = app.render(
+    app.load('features/booking/refund-policy-notice.tsx').RefundPolicyNotice,
+    {
+      policy: { configured: true, rateBps: 9500 },
+    },
+  )
+  assert.match(html, /Quy định hoàn tiền:/)
+  assert.match(html, /Đăng chuyển nhượng lượt đặt/)
+  assert.doesNotMatch(
+    html,
+    /95%|100%|<details|người mua lại|Chỉ được xác nhận vào sân|Khoản thu lỗi/,
+  )
+})
+
+test('legacy cancellation errors no longer advertise refunds for resold bookings', () => {
+  const { translateError } = application().load('lib/error-translator.ts')
+  assert.match(
+    translateError(
+      'BLOCKED_RULE: facility paid cancellation requires the 100% refund execution/reconciliation protocol',
+    ),
+    /không hỗ trợ hủy trực tiếp/,
+  )
+})
+
+test('admin booking monitor starts by choosing a facility and loads nothing before that', () => {
+  const app = application({
+    resources: { '/admin/bookings': { data: [{ id: 'khong-duoc-tai' }] } },
+  })
+  const html = app.render(app.load('features/admin/booking-monitor.tsx').BookingMonitor)
+  assert.match(html, /Bước 1 · Chọn cơ sở/)
+  assert.doesNotMatch(html, /KHONG-DU|name="status"/)
+})
+
+test('admin booking monitor lists only the chosen court bookings', () => {
+  const scope = {
+    facility: { id: 'co-so-1', name: 'Sân Cầu Giấy', status: 'ACTIVE' },
+    court: { id: 'san-2', name: 'Sân số 2', code: 'S2' },
+  }
+  const app = application({
+    sessionStorage: { getItem: () => JSON.stringify(scope) },
+    resources: {
+      '/admin/bookings?facilityId=co-so-1&courtId=san-2': {
+        data: [
+          {
+            id: 'abcdef12-0000',
+            status: 'CONFIRMED',
+            startsAt: '2026-11-05T00:30:00Z',
+            amount: 120000,
+            currency: 'VND',
+            priceSnapshot: { timezone: 'Asia/Ho_Chi_Minh' },
+          },
+        ],
+      },
+    },
+  })
+  const html = app.render(app.load('features/admin/booking-monitor.tsx').BookingMonitor)
+  assert.match(html, /Sân Cầu Giấy › Sân số 2/)
+  assert.match(html, />Đổi sân</)
+  assert.match(html, /ABCDEF12 · Đã xác nhận/)
+})
+
+test('first facility review points the Admin to its Owner application instead of offering decisions', () => {
+  const facility = {
+    id: 'ab12cd34-0000-0000-0000-000000000000',
+    ownerId: 'chu-san',
+    name: 'Sân Tây Hồ',
+    phone: '0900000000',
+    addressLine: '1 Quảng An',
+    ward: 'Tây Hồ',
+    province: 'Hà Nội',
+    timezone: 'Asia/Ho_Chi_Minh',
+    status: 'PENDING_APPROVAL',
+    amenities: [],
+  }
+  const detail = (applicationId) => ({
+    data: {
+      facility,
+      courts: [],
+      reviews: [],
+      audit: [
+        {
+          id: 'a1',
+          action: 'REFUND_POLICY_UPDATED',
+          occurred_at: '2026-10-23T00:00:00Z',
+          details: '{"rateBps":500}',
+        },
+        { id: 'a2', action: 'COURT_CREATED', occurred_at: '2026-10-23T00:00:00Z', details: null },
+      ],
+      possibleDuplicates: [],
+      applicationId,
+    },
+  })
+  const render = (applicationId) => {
+    const app = application({
+      resources: { [`/admin/facilities/${facility.id}`]: detail(applicationId) },
+      stubs: { './facility-status': { FacilityStatus: () => null } },
+    })
+    const Page = app.load('features/admin/facility-review.tsx').AdminFacilityReview
+    return app.render(() => Page({ id: facility.id }))
+  }
+  const linked = render('ho-so-1')
+  assert.match(linked, /href="\/admin\/owner-applications\/ho-so-1"/)
+  assert.doesNotMatch(linked, /Phê duyệt cơ sở/)
+  assert.match(linked, /AB12CD34/)
+  assert.match(render(null), /Phê duyệt cơ sở/)
+})
+
+test('admin account list is paged by the server and shows the full match count', () => {
+  const account = (i) => ({
+    id: `tk-${i}`,
+    fullName: `Người dùng ${i}`,
+    email: `u${i}@sporthub.local`,
+    emailVerified: true,
+    phone: null,
+    phoneVerified: false,
+    roles: ['CUSTOMER'],
+    status: 'ACTIVE',
+    createdAt: '2026-11-01T00:00:00Z',
+  })
+  const page = {
+    content: Array.from({ length: 20 }, (_, i) => account(i + 21)),
+    page: 1,
+    size: 20,
+    totalElements: 200,
+    totalPages: 10,
+    first: false,
+    last: false,
+  }
+  const app = application({ resources: { '/admin/accounts?page=0&size=20': { data: page } } })
+  const html = app.render(app.load('features/admin/account-table.tsx').AccountTable, {
+    model: { r: { data: page, loading: false, error: '', reload() {} }, page: 1, setPage() {} },
+  })
+  assert.match(html, /Hiển thị 21–40 \/ 200 tài khoản/)
+  assert.match(html, /aria-current="page"[^>]*>2</)
+  assert.match(html, />10</)
+  assert.doesNotMatch(html, /Tối đa 100/)
+})

@@ -1,0 +1,371 @@
+x-backend-env: &backend-env
+  POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER in .env}
+  POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+  REDIS_HOST: redis
+  REDIS_PASSWORD: ${REDIS_PASSWORD:?Set REDIS_PASSWORD in .env}
+  RABBITMQ_HOST: rabbitmq
+  RABBITMQ_USERNAME: ${RABBITMQ_DEFAULT_USER:?Set RABBITMQ_DEFAULT_USER in .env}
+  RABBITMQ_PASSWORD: ${RABBITMQ_DEFAULT_PASS:?Set RABBITMQ_DEFAULT_PASS in .env}
+  JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
+  SERVICE_CALL_SECRET: ${SERVICE_CALL_SECRET:?Set a separate private service call secret}
+  IDENTITY_SERVICE_URL: http://identity-service:8081
+  FACILITY_SERVICE_URL: http://facility-service:8082
+  SCHEDULE_SERVICE_URL: http://schedule-service:8083
+  BOOKING_SERVICE_URL: http://booking-service:8084
+  PAYMENT_SERVICE_URL: http://payment-service:8085
+  TRANSFER_SERVICE_URL: http://transfer-service:8086
+  SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-default}
+  DEMO_SEED_ENABLED: ${DEMO_SEED_ENABLED:-false}
+  DEMO_PASSWORD: ${DEMO_PASSWORD:-}
+  SPORTHUB_MONEY_MODE: ${SPORTHUB_MONEY_MODE:-DEMO}
+  SPORTHUB_PEER_RESALE_FACILITIES: ${SPORTHUB_PEER_RESALE_FACILITIES:-}
+  SPORTHUB_BANK_PROFILE_ENFORCEMENT: ${SPORTHUB_BANK_PROFILE_ENFORCEMENT:-false}
+  SPORTHUB_HOLD_PROTECTION_ENABLED: ${SPORTHUB_HOLD_PROTECTION_ENABLED:-false}
+  MANAGEMENT_ENDPOINT_HEALTH_PROBES_ENABLED: 'true'
+  JAVA_TOOL_OPTIONS: -Xmx256m
+
+name: ${COMPOSE_PROJECT_NAME:-sporthub}
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER in .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: postgres
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./backend/docker/postgres/init-databases.sh:/docker-entrypoint-initdb.d/01-init-databases.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    networks: [sporthub]
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?Set REDIS_PASSWORD in .env}
+    command: ["sh", "-c", "exec redis-server --requirepass \"$${REDIS_PASSWORD}\" --appendonly yes"]
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a \"$${REDIS_PASSWORD}\" ping | grep PONG"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks: [sporthub]
+
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:?Set RABBITMQ_DEFAULT_USER in .env}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:?Set RABBITMQ_DEFAULT_PASS in .env}
+      RABBITMQ_DEFAULT_VHOST: sporthub
+    ports:
+      - "${RABBITMQ_PORT:-5672}:5672"
+      - "${RABBITMQ_MANAGEMENT_PORT:-15672}:15672"
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+    networks: [sporthub]
+
+  minio:
+    # MinIO CE is source-only now; this multi-arch image is rebuilt from the
+    # corresponding upstream release and pinned by digest for reproducibility.
+    image: ghcr.io/coollabsio/minio:RELEASE.2025-04-22T22-12-26Z@sha256:a4938f37f1be1841b8e7b627ad0207b265345fd0d063e42d7410c78af0e63e68
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?Set MINIO_ROOT_USER in .env}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?Set MINIO_ROOT_PASSWORD in .env}
+    ports:
+      - "${MINIO_API_PORT:-9000}:9000"
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks: [sporthub]
+
+  identity-service:
+    profiles: [apps]
+    build:
+      context: ./backend
+      args:
+        SERVICE: identity-service
+    environment:
+      <<: *backend-env
+      IDENTITY_DB_URL: jdbc:postgresql://postgres:5432/identity_db
+      MAIL_HOST: ${MAIL_HOST:-localhost}
+      MAIL_PORT: ${MAIL_PORT:-25}
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+      MAIL_SMTP_AUTH: ${MAIL_SMTP_AUTH:-false}
+      MAIL_SMTP_STARTTLS: ${MAIL_SMTP_STARTTLS:-false}
+      MAIL_SMTP_STARTTLS_REQUIRED: ${MAIL_SMTP_STARTTLS_REQUIRED:-false}
+      DEMO_SMS_ENABLED: ${DEMO_SMS_ENABLED:-false}
+      FRONTEND_BASE_URL: ${APP_PUBLIC_URL:-http://localhost:3000}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      # An empty callback is derived from FRONTEND_BASE_URL by identity-service.
+      GOOGLE_REDIRECT_URI: ${GOOGLE_REDIRECT_URI:-}
+      SECURE_COOKIE: ${SECURE_COOKIE:-false}
+      OWNER_APPLICATION_DATA_KEY: ${OWNER_APPLICATION_DATA_KEY:?Set a separate Base64 owner application data key}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O - http://localhost:8081/actuator/health/readiness | grep -q '\"status\":\"UP\"'"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+    networks: [sporthub]
+
+  facility-service:
+    profiles: [apps]
+    build:
+      context: ./backend
+      args:
+        SERVICE: facility-service
+    environment:
+      <<: *backend-env
+      FACILITY_DB_URL: jdbc:postgresql://postgres:5432/facility_db
+      SPORTHUB_EVENTS_OUTBOX_ENABLED: 'true'
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_PUBLIC_ENDPOINT: ${MINIO_PUBLIC_ENDPOINT:-http://localhost:9000}
+      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER}
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      identity-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O - http://localhost:8082/actuator/health/readiness | grep -q '\"status\":\"UP\"'"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+    networks: [sporthub]
+
+  schedule-service:
+    profiles: [apps]
+    build:
+      context: ./backend
+      args:
+        SERVICE: schedule-service
+    environment:
+      <<: *backend-env
+      SCHEDULE_DB_URL: jdbc:postgresql://postgres:5432/schedule_db
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      identity-service:
+        condition: service_healthy
+      facility-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O - http://localhost:8083/actuator/health/readiness | grep -q '\"status\":\"UP\"'"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+    networks: [sporthub]
+
+  booking-service:
+    profiles: [apps]
+    build:
+      context: ./backend
+      args:
+        SERVICE: booking-service
+    environment:
+      <<: *backend-env
+      BOOKING_DB_URL: jdbc:postgresql://postgres:5432/booking_db
+      SPORTHUB_EVENTS_OUTBOX_ENABLED: 'true'
+      APP_PUBLIC_URL: ${APP_PUBLIC_URL:-http://localhost:3000}
+      GROUP_PAYMENT_DEADLINE_SECONDS: ${GROUP_PAYMENT_DEADLINE_SECONDS:-1800}
+      GROUP_MIN_LEAD_SECONDS: ${GROUP_MIN_LEAD_SECONDS:-900}
+      GROUP_REMINDER_MIN_INTERVAL: ${GROUP_REMINDER_MIN_INTERVAL:-PT15M}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      identity-service:
+        condition: service_healthy
+      facility-service:
+        condition: service_healthy
+      schedule-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O - http://localhost:8084/actuator/health/readiness | grep -q '\"status\":\"UP\"'"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+    networks: [sporthub]
+
+  payment-service:
+    profiles: [apps]
+    build:
+      context: ./backend
+      args:
+        SERVICE: payment-service
+    environment:
+      <<: *backend-env
+      PAYMENT_DB_URL: jdbc:postgresql://postgres:5432/payment_db
+      SPORTHUB_EVENTS_OUTBOX_ENABLED: 'true'
+      DEMO_PAYMENT_CALLBACK_SECRET: ${DEMO_PAYMENT_CALLBACK_SECRET:-}
+      APP_PUBLIC_URL: ${APP_PUBLIC_URL:-http://localhost:3000}
+      PAYMENT_WEBHOOK_ORIGIN: ${PAYMENT_WEBHOOK_ORIGIN:-}
+      PAYMENT_SECRET_KEYS: ${PAYMENT_SECRET_KEYS:-}
+      DEMO_PAYMENT_CALLBACK_URL: http://payment-service:8085/api/v1/payments/providers/demo/callback
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      identity-service:
+        condition: service_healthy
+      booking-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O - http://localhost:8085/actuator/health/readiness | grep -q '\"status\":\"UP\"'"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+    networks: [sporthub]
+
+  transfer-service:
+    profiles: [apps]
+    build:
+      context: ./backend
+      args:
+        SERVICE: transfer-service
+    environment:
+      <<: *backend-env
+      TRANSFER_DB_URL: jdbc:postgresql://postgres:5432/transfer_db
+      SPORTHUB_EVENTS_OUTBOX_ENABLED: 'true'
+      TRANSFER_ACQUISITION_SECONDS: ${TRANSFER_ACQUISITION_SECONDS:-600}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      identity-service:
+        condition: service_healthy
+      booking-service:
+        condition: service_healthy
+      facility-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O - http://localhost:8086/actuator/health/readiness | grep -q '\"status\":\"UP\"'"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+    networks: [sporthub]
+
+  api-gateway:
+    profiles: [apps]
+    build:
+      context: ./backend
+      args:
+        SERVICE: api-gateway
+    environment:
+      <<: *backend-env
+      CORS_ALLOWED_ORIGIN: ${CORS_ALLOWED_ORIGIN:-http://localhost:3000}
+      GATEWAY_RATE_LIMIT_REPLENISH_RATE: ${GATEWAY_RATE_LIMIT_REPLENISH_RATE:-20}
+      GATEWAY_RATE_LIMIT_BURST_CAPACITY: ${GATEWAY_RATE_LIMIT_BURST_CAPACITY:-40}
+    ports: ["${GATEWAY_PORT:-8080}:8080"]
+    depends_on:
+      redis:
+        condition: service_healthy
+      identity-service:
+        condition: service_healthy
+      facility-service:
+        condition: service_healthy
+      schedule-service:
+        condition: service_healthy
+      booking-service:
+        condition: service_healthy
+      payment-service:
+        condition: service_healthy
+      transfer-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O - http://localhost:8080/actuator/health/readiness | grep -q '\"status\":\"UP\"'"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+    networks: [sporthub]
+
+  frontend:
+    profiles: [apps]
+    environment:
+      GATEWAY_URL: http://api-gateway:8080
+    build:
+      context: ./frontend
+      args:
+        GATEWAY_URL: http://api-gateway:8080
+        NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: ${NEXT_PUBLIC_GOOGLE_MAPS_API_KEY:-}
+    ports: ["${FRONTEND_PORT:-3000}:3000"]
+    depends_on:
+      api-gateway:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O - http://127.0.0.1:3000/ > /dev/null"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 15s
+    networks: [sporthub]
+
+networks:
+  sporthub:
+    driver: bridge
+
+volumes:
+  postgres-data:
+  redis-data:
+  rabbitmq-data:
+  minio-data:

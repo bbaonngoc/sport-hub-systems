@@ -1,0 +1,132 @@
+# ═══════════════════════════════════════════════════════════════
+# SportHub API Gateway — Configuration
+# ═══════════════════════════════════════════════════════════════
+
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+
+  # ── Route Definitions ───────────────────────────────────────
+  cloud:
+    gateway:
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+        - name: RequestRateLimiter
+          args:
+            redis-rate-limiter.replenishRate: ${GATEWAY_RATE_LIMIT_REPLENISH_RATE:20}
+            redis-rate-limiter.burstCapacity: ${GATEWAY_RATE_LIMIT_BURST_CAPACITY:40}
+            redis-rate-limiter.requestedTokens: 1
+            key-resolver: "#{@clientIpKeyResolver}"
+
+      globalcors:
+        add-to-simple-url-handler-mapping: true
+        cors-configurations:
+          '[/**]':
+            allowedOrigins:
+              - ${CORS_ALLOWED_ORIGIN:http://localhost:3000}
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - PATCH
+              - DELETE
+              - OPTIONS
+            allowedHeaders:
+              - Authorization
+              - Content-Type
+              - X-Correlation-Id
+              - Idempotency-Key
+            exposedHeaders:
+              - X-Correlation-Id
+            allowCredentials: true
+            maxAge: 3600
+
+      routes:
+        - id: transfer-service
+          uri: ${TRANSFER_SERVICE_URL:http://localhost:8086}
+          predicates:
+            - Path=/api/v1/transfers/**
+        - id: payment-service
+          uri: ${PAYMENT_SERVICE_URL:http://localhost:8085}
+          predicates:
+            - Path=/api/v1/payments/**, /api/v1/admin/payments/**
+        - id: facility-service
+          uri: ${FACILITY_SERVICE_URL:http://localhost:8082}
+          predicates:
+            - Path=/api/v1/facilities/**, /api/v1/owner/facilities/**, /api/v1/owner/courts/**, /api/v1/owner/maintenance/**, /api/v1/sport-categories/**, /api/v1/admin/sport-categories/**, /api/v1/admin/facilities/**
+        # ── Identity & Access Service ──────────────────────────
+        - id: identity-service
+          uri: ${IDENTITY_SERVICE_URL:http://localhost:8081}
+          predicates:
+            - Path=/api/v1/auth/**, /api/v1/users/**, /api/v1/owner-applications/**, /api/v1/staff-bindings/**, /api/v1/staff-profiles/**, /api/v1/admin/accounts/**, /api/v1/admin/owner-applications/**
+          filters:
+            - StripPrefix=0
+
+        # ── Schedule & Pricing Service ─────────────────────────
+        - id: schedule-service
+          uri: ${SCHEDULE_SERVICE_URL:http://localhost:8083}
+          predicates:
+            - Path=/api/v1/schedules/**, /api/v1/pricing/**, /api/v1/slots/**
+          filters:
+            - StripPrefix=0
+
+        # ── Booking & Reservation Service ──────────────────────
+        - id: booking-service
+          uri: ${BOOKING_SERVICE_URL:http://localhost:8084}
+          predicates:
+            - Path=/api/v1/bookings/**, /api/v1/groups/**, /api/v1/admin/bookings/**
+          filters:
+            - StripPrefix=0
+
+  # ── Redis (Phase 1 rate limiting infrastructure) ────────────
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD}
+
+sporthub:
+  gateway:
+    security:
+      # Only these routes bypass Phase 2A JWT authentication.
+      public-paths:
+        - /api/v1/auth/register
+        - /api/v1/auth/verify
+        - /api/v1/auth/login
+        - /api/v1/auth/refresh
+        - /api/v1/auth/forgot-password
+        - /api/v1/auth/reset-password
+        - /api/v1/auth/logout
+        - /api/v1/auth/oauth2/**
+        - /api/v1/facilities/**
+        - /api/v1/sport-categories
+        - /api/v1/users/avatars/*
+        - /api/v1/schedules/public/**
+        - /api/v1/bookings/availability
+        - /api/v1/bookings/quote
+        - /api/v1/bookings/search
+        - /api/v1/payments/providers/demo/callback
+        - /api/v1/payments/providers/sepay/*/webhook
+        - /actuator/health/**
+
+jwt:
+  secret: ${JWT_SECRET}
+
+# ── Actuator ──────────────────────────────────────────────────
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    gateway:
+      enabled: false
+
+# ── Logging ───────────────────────────────────────────────────
+logging:
+  level:
+    org.springframework.cloud.gateway: INFO
+    com.sporthub.gateway: DEBUG

@@ -1,0 +1,4577 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "SportHub Facility API",
+    "version": "1.0.0",
+    "description": "Owner-scoped facility/court/media/maintenance operations, additional-facility review with retained private legal documents, and public discovery metadata. No implicit activation on CRUD. First-facility Owner application remains a separate pending capability. First-facility applicants may read/edit only their Identity-scoped application facility while DRAFT or supplement is open. Pending/rejected profiles are frozen. Prepared first facilities remain private until Identity commits APPROVED. Submit/review linked first facilities through Owner Application APIs. Facility/public projections never include receiving-channel credentials, webhook keys or ciphertext. Configure credentials only through write-only Payment channel API."
+  },
+  "servers": [
+    {
+      "url": "/api/v1"
+    }
+  ],
+  "paths": {
+    "/owner/facilities": {
+      "get": {
+        "operationId": "listOwnedFacilities",
+        "tags": [
+          "Facility"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "./components/schemas.yaml#/ApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/FacilityProfileView"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Storage unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createFacility",
+        "tags": [
+          "Facility"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "./components/schemas.yaml#/ApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/FacilityProfileView"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Storage unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FacilityInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/owner/facilities/{id}": {
+      "get": {
+        "operationId": "getOwnedFacility",
+        "tags": [
+          "Facility"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "./components/schemas.yaml#/ApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/FacilityProfileView"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Storage unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "updateFacility",
+        "tags": [
+          "Facility"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "./components/schemas.yaml#/ApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/FacilityProfileView"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Storage unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FacilityInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/owner/facilities/{id}/courts": {
+      "get": {
+        "operationId": "listOwnedCourts",
+        "tags": [
+          "Facility"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "./components/schemas.yaml#/ApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/CourtView"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Storage unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createCourt",
+        "tags": [
+          "Facility"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "./components/schemas.yaml#/ApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/CourtView"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Storage unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CourtInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/owner/courts/{id}": {
+      "get": {
+        "operationId": "getOwnedCourt",
+        "tags": [
+          "Facility"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "./components/schemas.yaml#/ApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/CourtView"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Storage unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "updateCourt",
+        "tags": [
+          "Facility"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "./components/schemas.yaml#/ApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/CourtView"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Storage unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CourtInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/owner/courts/{id}/maintenance": {
+      "get": {
+        "operationId": "listMaintenance",
+        "tags": [
+          "Facility"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "./components/schemas.yaml#/ApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/MaintenanceView"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Storage unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createMaintenance",
+        "tags": [
+          "Facility"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "./components/schemas.yaml#/ApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/MaintenanceView"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Storage unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MaintenanceInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/owner/maintenance/{id}": {
+      "delete": {
+        "operationId": "cancelMaintenance",
+        "tags": [
+          "Facility"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Success"
+          },
+          "400": {
+            "description": "Validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Storage unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/facilities": {
+      "get": {
+        "operationId": "searchFacilities",
+        "tags": [
+          "Facility"
+        ],
+        "security": [],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "provinceCode",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 2,
+              "pattern": "^[0-9]{2}$",
+              "description": "Current Vietnam province/city code from Open Admin Data. Keep leading zeroes."
+            },
+            "description": "Filter by the selected current province/city code, rather than free-form display text."
+          },
+          {
+            "name": "sportCategoryId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "district",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "description": "Former district name, matched without diacritics. Only Hanoi has a mapping for now."
+          },
+          {
+            "name": "ward",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "description": "Current ward or commune name, matched without diacritics."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "./components/schemas.yaml#/ApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/FacilityView"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Storage unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "description": "Only ACTIVE facilities with at least one enabled court in an active sport category. Text criteria combine with AND; wildcard characters in user text are literal. Public availability and per-slot price filtering are aggregated by Booking /bookings/search."
+      }
+    },
+    "/facilities/{id}": {
+      "get": {
+        "operationId": "getPublicFacility",
+        "tags": [
+          "Facility"
+        ],
+        "security": [],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "./components/schemas.yaml#/ApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/FacilityView"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Storage unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/facilities/{id}/courts": {
+      "get": {
+        "operationId": "listPublicCourts",
+        "tags": [
+          "Facility"
+        ],
+        "security": [],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "./components/schemas.yaml#/ApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/CourtView"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Storage unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sport-categories": {
+      "get": {
+        "operationId": "listSportCategories",
+        "tags": [
+          "Facility"
+        ],
+        "security": [],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "./components/schemas.yaml#/ApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/CategoryView"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Storage unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/sport-categories": {
+      "post": {
+        "operationId": "createSportCategory",
+        "tags": [
+          "Facility"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "./components/schemas.yaml#/ApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/CategoryView"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Storage unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CategoryInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/owner/facilities/{facilityId}/images": {
+      "get": {
+        "operationId": "listFacilityImages",
+        "tags": [
+          "Facility"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "facilityId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "./components/schemas.yaml#/ApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/ImageView"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Storage unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "uploadFacilityImage",
+        "tags": [
+          "Facility"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "facilityId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "./components/schemas.yaml#/ApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/ImageView"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Storage unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "courtId": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                },
+                "required": [
+                  "file"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/owner/facilities/{facilityId}/images/{imageId}": {
+      "delete": {
+        "operationId": "deleteFacilityImage",
+        "tags": [
+          "Facility"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "facilityId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "in": "path",
+            "name": "imageId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Success"
+          },
+          "400": {
+            "description": "Validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Storage unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "./components/schemas.yaml#/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "replaceFacilityImage",
+        "summary": "Upload replacement before changing metadata; durably delete the previous object after commit",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "facilityId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "in": "path",
+            "name": "imageId",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "file"
+                ],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Replacement image metadata and signed URL"
+          },
+          "400": {
+            "description": "Invalid JPEG/PNG, file size or dimensions"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Facility owner required"
+          },
+          "404": {
+            "description": "Image not found"
+          },
+          "502": {
+            "description": "Storage or replacement failed; previous reference preserved"
+          }
+        }
+      }
+    },
+    "/owner/courts/{id}/context": {
+      "get": {
+        "operationId": "getOwnerCourtContext",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/CourtContext"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid session"
+          },
+          "403": {
+            "description": "Outside facility scope"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/facilities/courts/{id}/context": {
+      "get": {
+        "operationId": "getPublicCourtContext",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/CourtContext"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid session"
+          },
+          "403": {
+            "description": "Outside facility scope"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/facilities/{id}/images": {
+      "get": {
+        "operationId": "getPublicImages",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ImageView"
+                      }
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid session"
+          },
+          "403": {
+            "description": "Outside facility scope"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/facilities/{id}/transfer-policy": {
+      "get": {
+        "operationId": "publicTransferPolicy",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/TransferPolicy"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "data",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Invalid session"
+          },
+          "403": {
+            "description": "Outside actor scope"
+          },
+          "404": {
+            "description": "Resource not found"
+          },
+          "409": {
+            "description": "Conflict or BLOCKED_RULE"
+          },
+          "503": {
+            "description": "Dependency unavailable"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/owner/facilities/{id}/transfer-policy": {
+      "get": {
+        "operationId": "ownerTransferPolicy",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/TransferPolicy"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "data",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Invalid session"
+          },
+          "403": {
+            "description": "Outside actor scope"
+          },
+          "404": {
+            "description": "Resource not found"
+          },
+          "409": {
+            "description": "Conflict or BLOCKED_RULE"
+          },
+          "503": {
+            "description": "Dependency unavailable"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      },
+      "put": {
+        "operationId": "updateTransferPolicy",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/TransferPolicy"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "data",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Invalid session"
+          },
+          "403": {
+            "description": "Outside actor scope"
+          },
+          "404": {
+            "description": "Resource not found"
+          },
+          "409": {
+            "description": "Conflict or BLOCKED_RULE"
+          },
+          "503": {
+            "description": "Dependency unavailable"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransferPolicyInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/owner/facilities/{id}/submit": {
+      "post": {
+        "operationId": "submitFacilityReview",
+        "description": "OWNER must own a DRAFT facility with at least one enabled court and configured operating hours. Stores immutable submission snapshot. Duplicate submission is rejected.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/FacilityReview"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "data",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Invalid session"
+          },
+          "403": {
+            "description": "Outside actor scope"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "409": {
+            "description": "Review state conflict"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/owner/facilities/{id}/reviews": {
+      "get": {
+        "operationId": "ownFacilityReviewHistory",
+        "description": "",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/FacilityReview"
+                      }
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "data",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Invalid session"
+          },
+          "403": {
+            "description": "Outside actor scope"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "409": {
+            "description": "Review state conflict"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/admin/facilities": {
+      "get": {
+        "operationId": "adminSearchFacilities",
+        "description": "ADMIN only, up to 100 results, oldest pending submission first.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/FacilityView"
+                      }
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "data",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Invalid session"
+          },
+          "403": {
+            "description": "Outside actor scope"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "409": {
+            "description": "Review state conflict"
+          }
+        },
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/admin/facilities/{id}": {
+      "get": {
+        "operationId": "adminFacilityReviewDetail",
+        "description": "ADMIN only. Read access is audited; identical-address candidates are included for human review.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/FacilityReviewDetail"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "data",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Invalid session"
+          },
+          "403": {
+            "description": "Outside actor scope"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "409": {
+            "description": "Review state conflict"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/admin/facilities/{id}/decision": {
+      "post": {
+        "operationId": "adminDecideFacilityReview",
+        "description": "Approve additional facility, reject definitively or reopen DRAFT for supplements. Decision and durable facility.reviewed outbox commit atomically. Identity consumes notices idempotently; no cross-service database access.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/FacilityView"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "data",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Invalid session"
+          },
+          "403": {
+            "description": "Outside actor scope"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "409": {
+            "description": "Review state conflict"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FacilityReviewDecision"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/owner/facilities/{id}/documents": {
+      "get": {
+        "operationId": "ownerFacilityDocuments",
+        "description": "Private documents only for owning OWNER or ADMIN. Admin access is audited.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/PrivateDocument"
+                      }
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "data",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Invalid session"
+          },
+          "403": {
+            "description": "Outside actor scope"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "409": {
+            "description": "Review state conflict"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      },
+      "post": {
+        "operationId": "uploadPrivateFacilityDocument",
+        "description": "PDF/JPEG/PNG, validated content, 10 MB maximum. Only editable profiles accept uploads.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/PrivateDocument"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "data",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Invalid session"
+          },
+          "403": {
+            "description": "Outside actor scope"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "409": {
+            "description": "Review state conflict"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                },
+                "required": [
+                  "file"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/facilities/{id}/documents": {
+      "get": {
+        "operationId": "adminFacilityDocuments",
+        "description": "Private documents only for owning OWNER or ADMIN. Admin access is audited.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/PrivateDocument"
+                      }
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "data",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Invalid session"
+          },
+          "403": {
+            "description": "Outside actor scope"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "409": {
+            "description": "Review state conflict"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/owner/facilities/{id}/documents/{documentId}": {
+      "delete": {
+        "operationId": "removePrivateFacilityDocument",
+        "description": "",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Metadata removed, durable object cleanup queued"
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Invalid session"
+          },
+          "403": {
+            "description": "Outside actor scope"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "409": {
+            "description": "Review state conflict"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "documentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/admin/facilities/{id}/images": {
+      "get": {
+        "operationId": "adminFacilityReviewImages",
+        "description": "ADMIN only. Audited access to submitted facility images.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ImageView"
+                      }
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "data",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Invalid session"
+          },
+          "403": {
+            "description": "Outside actor scope"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "409": {
+            "description": "Review state conflict"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/owner/facilities/{id}/transfer-fee-policy": {
+      "get": {
+        "operationId": "getOwnedFacilityTransferFeePolicy",
+        "description": "Facility-scoped transfer fee policy. Only the actual facility Owner can configure it with CAS and audit. No rate is seeded; fees belong entirely to this facility and acquired terms remain immutable.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "status",
+                    "message",
+                    "data",
+                    "timestamp"
+                  ],
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/FacilityTransferFeePolicy"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Invalid or revoked session"
+          },
+          "403": {
+            "description": "Outside facility ownership"
+          },
+          "409": {
+            "description": "Version conflict"
+          }
+        }
+      },
+      "put": {
+        "operationId": "updateOwnedFacilityTransferFeePolicy",
+        "description": "Facility-scoped transfer fee policy. Only the actual facility Owner can configure it with CAS and audit. No rate is seeded; fees belong entirely to this facility and acquired terms remain immutable.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FacilityTransferFeePolicyInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "status",
+                    "message",
+                    "data",
+                    "timestamp"
+                  ],
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/FacilityTransferFeePolicy"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Invalid or revoked session"
+          },
+          "403": {
+            "description": "Outside facility ownership"
+          },
+          "409": {
+            "description": "Version conflict"
+          }
+        }
+      }
+    },
+    "/facilities/{id}/transfer-fee-policy": {
+      "get": {
+        "operationId": "getPublicFacilityTransferFeePolicy",
+        "description": "Facility-scoped transfer fee policy. Only the actual facility Owner can configure it with CAS and audit. No rate is seeded; fees belong entirely to this facility and acquired terms remain immutable.",
+        "security": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "status",
+                    "message",
+                    "data",
+                    "timestamp"
+                  ],
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/FacilityTransferFeePolicy"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Invalid or revoked session"
+          },
+          "403": {
+            "description": "Outside facility ownership"
+          },
+          "409": {
+            "description": "Version conflict"
+          }
+        }
+      }
+    },
+    "/facilities/areas": {
+      "get": {
+        "operationId": "getFormerDistricts",
+        "security": [],
+        "parameters": [
+          {
+            "name": "provinceCode",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 2
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Former districts and the current wards that replaced them; empty when the province has no mapping",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "provinceCode",
+                          "name",
+                          "wards"
+                        ],
+                        "properties": {
+                          "provinceCode": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "wards": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "required": [
+                                "code",
+                                "name"
+                              ],
+                              "properties": {
+                                "code": {
+                                  "type": "string"
+                                },
+                                "name": {
+                                  "type": "string"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "FacilityInput": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 180
+          },
+          "phone": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 30
+          },
+          "addressLine": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500,
+            "description": "House number, street and additional address details only; administrative units are stored separately."
+          },
+          "provinceCode": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 2,
+            "pattern": "^[0-9]{2}$",
+            "description": "Current Vietnam province/city code from Open Admin Data. Keep leading zeroes."
+          },
+          "province": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "description": "Canonical current province/city display name. The backend derives the stored display name from its code."
+          },
+          "wardCode": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 5,
+            "pattern": "^[0-9]{5}$",
+            "description": "Current Vietnam commune/ward code from Open Admin Data. Must belong to provinceCode; keep leading zeroes."
+          },
+          "ward": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "description": "Canonical current commune/ward display name. The backend derives the stored display name from its code."
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 5000
+          },
+          "timezone": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "latitude": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "minimum": -90,
+            "maximum": 90,
+            "description": "Paired with the other coordinate. Zero is valid; stored with seven decimal places."
+          },
+          "longitude": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "minimum": -180,
+            "maximum": 180,
+            "description": "Paired with the other coordinate. Zero is valid; stored with seven decimal places."
+          },
+          "amenities": {
+            "type": "array",
+            "maxItems": 30,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            }
+          },
+          "contactEmail": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "email",
+            "maxLength": 254,
+            "description": "Optional private facility contact, independent of account email. Trimmed/lowercased like Identity; blank is null. On PUT, omission preserves the existing contact; explicit null/blank clears it."
+          }
+        },
+        "required": [
+          "name",
+          "phone",
+          "addressLine",
+          "provinceCode",
+          "province",
+          "wardCode",
+          "ward",
+          "timezone"
+        ],
+        "additionalProperties": false,
+        "description": "Location is a paired optional value. On PUT, omitting both latitude and longitude preserves the stored location; supply both numeric values to replace it, or both null to clear it (existing nullable location semantics). One missing/null coordinate is invalid. Values use existing NUMERIC(10,7) storage precision. Address text is independent of map coordinates. Backend ownership/applicant and publication guards apply; STAFF alone grants no edit access. Vietnam addresses use province/city and commune/ward only. The backend validates codes and their relationship against the current Open Admin Data dataset and stores the canonical display names; selecting another province requires a new ward selection."
+      },
+      "FacilityView": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 180
+          },
+          "phone": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 30
+          },
+          "addressLine": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500,
+            "description": "House number, street and additional address details only; administrative units are stored separately."
+          },
+          "provinceCode": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 2,
+            "maxLength": 2,
+            "pattern": "^[0-9]{2}$",
+            "description": "Current Vietnam province/city code from Open Admin Data. Keep leading zeroes. Null on an unmapped legacy address until its administrative units are selected again."
+          },
+          "province": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "description": "Canonical current province/city display name."
+          },
+          "wardCode": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 5,
+            "maxLength": 5,
+            "pattern": "^[0-9]{5}$",
+            "description": "Current Vietnam commune/ward code from Open Admin Data. Must belong to provinceCode; keep leading zeroes. Null on an unmapped legacy address until its administrative units are selected again."
+          },
+          "ward": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "description": "Canonical current commune/ward display name."
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 5000
+          },
+          "timezone": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "latitude": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "minimum": -90,
+            "maximum": 90
+          },
+          "longitude": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "minimum": -180,
+            "maximum": 180
+          },
+          "amenities": {
+            "type": "array",
+            "maxItems": 30,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            }
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "ownerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "DRAFT",
+              "PENDING_APPROVAL",
+              "ACTIVE",
+              "SUSPENDED",
+              "REJECTED"
+            ]
+          },
+          "version": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "required": [
+          "id",
+          "ownerId",
+          "name",
+          "phone",
+          "addressLine",
+          "provinceCode",
+          "province",
+          "wardCode",
+          "ward",
+          "timezone",
+          "status",
+          "amenities",
+          "version"
+        ],
+        "additionalProperties": false
+      },
+      "CourtInput": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 50
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 180
+          },
+          "sportCategoryId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 5000
+          },
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "code",
+          "name",
+          "sportCategoryId",
+          "enabled"
+        ],
+        "additionalProperties": false
+      },
+      "CourtView": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 50
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 180
+          },
+          "sportCategoryId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 5000
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "facilityId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "required": [
+          "id",
+          "facilityId",
+          "sportCategoryId",
+          "code",
+          "name",
+          "enabled",
+          "version"
+        ],
+        "additionalProperties": false
+      },
+      "CategoryInput": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "active": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name",
+          "active"
+        ],
+        "additionalProperties": false
+      },
+      "CategoryView": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "active"
+        ],
+        "additionalProperties": false
+      },
+      "MaintenanceInput": {
+        "type": "object",
+        "properties": {
+          "startsAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endsAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1200
+          }
+        },
+        "required": [
+          "startsAt",
+          "endsAt",
+          "reason"
+        ],
+        "additionalProperties": false
+      },
+      "MaintenanceView": {
+        "type": "object",
+        "properties": {
+          "startsAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endsAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1200
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "courtId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "cancelled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "courtId",
+          "startsAt",
+          "endsAt",
+          "reason",
+          "cancelled"
+        ],
+        "additionalProperties": false
+      },
+      "ImageView": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "courtId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "objectKey": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "contentType": {
+            "type": "string",
+            "enum": [
+              "image/png",
+              "image/jpeg"
+            ]
+          },
+          "sizeBytes": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "required": [
+          "id",
+          "objectKey",
+          "url",
+          "contentType",
+          "sizeBytes"
+        ],
+        "additionalProperties": false
+      },
+      "CourtContext": {
+        "type": "object",
+        "properties": {
+          "facility": {
+            "$ref": "#/components/schemas/FacilityView"
+          },
+          "court": {
+            "$ref": "#/components/schemas/CourtView"
+          },
+          "maintenance": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MaintenanceView"
+            }
+          }
+        },
+        "required": [
+          "facility",
+          "court",
+          "maintenance"
+        ]
+      },
+      "TransferPolicy": {
+        "type": "object",
+        "properties": {
+          "configured": {
+            "type": "boolean"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "minLeadSeconds": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 7776000
+          }
+        },
+        "required": [
+          "configured",
+          "enabled",
+          "minLeadSeconds"
+        ]
+      },
+      "TransferPolicyInput": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "minLeadSeconds": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 7776000
+          }
+        },
+        "required": [
+          "enabled",
+          "minLeadSeconds"
+        ]
+      },
+      "FacilityReview": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "facilityId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "ownerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "PENDING_APPROVAL",
+              "APPROVED",
+              "REJECTED",
+              "SUPPLEMENT_REQUIRED"
+            ]
+          },
+          "snapshot": {
+            "$ref": "#/components/schemas/FacilitySnapshot"
+          },
+          "submittedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "reviewedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "reviewedBy": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "facilityId",
+          "ownerId",
+          "state",
+          "snapshot",
+          "submittedAt"
+        ]
+      },
+      "PrivateDocument": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "description": "5-minute signed MinIO link. No public document endpoint."
+          },
+          "contentType": {
+            "type": "string"
+          },
+          "sizeBytes": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "archived": {
+            "type": "boolean",
+            "description": "Archived versions stay accessible to audited Admin review; owning Owner sees current documents."
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "url",
+          "contentType",
+          "sizeBytes",
+          "archived"
+        ]
+      },
+      "FacilityReviewDetail": {
+        "type": "object",
+        "properties": {
+          "facility": {
+            "$ref": "#/components/schemas/FacilityProfileView"
+          },
+          "courts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CourtView"
+            }
+          },
+          "reviews": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FacilityReview"
+            }
+          },
+          "audit": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "possibleDuplicates": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FacilityView"
+            }
+          },
+          "applicationId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "Owner application of a first facility; decide that application instead of this facility."
+          }
+        },
+        "required": [
+          "facility",
+          "courts",
+          "reviews",
+          "audit",
+          "possibleDuplicates"
+        ]
+      },
+      "FacilityReviewDecision": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "APPROVE",
+              "REJECT",
+              "SUPPLEMENT_REQUIRED"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000,
+            "description": "Rejection/supplement decisions require at least 20 trimmed characters."
+          }
+        },
+        "required": [
+          "action",
+          "reason"
+        ]
+      },
+      "FacilityProfileView": {
+        "description": "Private Owner/applicant/Admin profile. Public facility and court-context responses use FacilityView without contactEmail.",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/FacilityView"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "contactEmail": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "format": "email",
+                "maxLength": 254,
+                "description": "Optional private facility contact, independent of account email. Trimmed/lowercased like Identity; blank is null. On PUT, omission preserves the existing contact; explicit null/blank clears it."
+              }
+            }
+          }
+        ]
+      },
+      "FacilitySnapshot": {
+        "type": "object",
+        "description": "Immutable submitted configuration. Legacy facility snapshots may lack current administrative codes or contactEmail; never backfilled from operational/account data.",
+        "properties": {
+          "facility": {
+            "$ref": "#/components/schemas/SubmittedFacilityProfileView"
+          },
+          "courts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CourtView"
+            }
+          },
+          "hours": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "prices": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "documents": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "images": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          }
+        }
+      },
+      "SubmittedFacilityProfileView": {
+        "type": "object",
+        "description": "Immutable submitted facility profile. Current submissions store administrative codes and canonical display names. Legacy submissions retain their original address data and may omit administrative codes or contactEmail; never backfilled from the operational profile.",
+        "properties": {
+          "name": {
+            "$ref": "#/components/schemas/FacilityView/properties/name"
+          },
+          "phone": {
+            "$ref": "#/components/schemas/FacilityView/properties/phone"
+          },
+          "addressLine": {
+            "$ref": "#/components/schemas/FacilityView/properties/addressLine"
+          },
+          "provinceCode": {
+            "$ref": "#/components/schemas/FacilityView/properties/provinceCode"
+          },
+          "province": {
+            "$ref": "#/components/schemas/FacilityView/properties/province"
+          },
+          "wardCode": {
+            "$ref": "#/components/schemas/FacilityView/properties/wardCode"
+          },
+          "ward": {
+            "$ref": "#/components/schemas/FacilityView/properties/ward"
+          },
+          "description": {
+            "$ref": "#/components/schemas/FacilityView/properties/description"
+          },
+          "timezone": {
+            "$ref": "#/components/schemas/FacilityView/properties/timezone"
+          },
+          "latitude": {
+            "$ref": "#/components/schemas/FacilityView/properties/latitude"
+          },
+          "longitude": {
+            "$ref": "#/components/schemas/FacilityView/properties/longitude"
+          },
+          "amenities": {
+            "$ref": "#/components/schemas/FacilityView/properties/amenities"
+          },
+          "id": {
+            "$ref": "#/components/schemas/FacilityView/properties/id"
+          },
+          "ownerId": {
+            "$ref": "#/components/schemas/FacilityView/properties/ownerId"
+          },
+          "status": {
+            "$ref": "#/components/schemas/FacilityView/properties/status"
+          },
+          "version": {
+            "$ref": "#/components/schemas/FacilityView/properties/version"
+          },
+          "contactEmail": {
+            "$ref": "#/components/schemas/FacilityProfileView/allOf/1/properties/contactEmail"
+          }
+        },
+        "required": [
+          "id",
+          "ownerId",
+          "name",
+          "phone",
+          "addressLine",
+          "province",
+          "ward",
+          "timezone",
+          "status",
+          "amenities",
+          "version"
+        ]
+      },
+      "FacilityRefundPolicy": {
+        "type": "object",
+        "required": [
+          "configured",
+          "id",
+          "version",
+          "rateBps",
+          "currency",
+          "rounding",
+          "termsHash",
+          "createdAt"
+        ],
+        "properties": {
+          "configured": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "version": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "rateBps": {
+            "type": "integer",
+            "nullable": true,
+            "minimum": 0,
+            "maximum": 10000,
+            "description": "Cancellation refund rate in whole basis points, independently configured from this facility transfer fee."
+          },
+          "currency": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "VND"
+            ]
+          },
+          "rounding": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "HALF_UP"
+            ]
+          },
+          "termsHash": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        }
+      },
+      "FacilityRefundPolicyInput": {
+        "type": "object",
+        "required": [
+          "rateBps",
+          "version"
+        ],
+        "properties": {
+          "rateBps": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 10000,
+            "description": "Cancellation refund rate in whole basis points, independently configured from this facility transfer fee."
+          },
+          "version": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "description": "Expected current version; zero only for first explicit configuration."
+          }
+        }
+      },
+      "FacilityTransferFeePolicy": {
+        "type": "object",
+        "required": [
+          "configured",
+          "id",
+          "version",
+          "feeBps",
+          "currency",
+          "rounding",
+          "termsHash",
+          "createdAt"
+        ],
+        "properties": {
+          "configured": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "version": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "feeBps": {
+            "type": "integer",
+            "nullable": true,
+            "minimum": 0,
+            "maximum": 10000,
+            "description": "Fee set by this facility Owner in whole basis points (500 = 5%). The fee belongs to the facility, with no platform income. Independent of the cancellation refund rate."
+          },
+          "currency": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "VND"
+            ]
+          },
+          "rounding": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "HALF_UP"
+            ]
+          },
+          "termsHash": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        }
+      },
+      "FacilityTransferFeePolicyInput": {
+        "type": "object",
+        "required": [
+          "feeBps",
+          "version"
+        ],
+        "properties": {
+          "feeBps": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 10000,
+            "description": "Fee set by this facility Owner in whole basis points (500 = 5%). The fee belongs to the facility, with no platform income. Independent of the cancellation refund rate."
+          },
+          "version": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "description": "Expected current version; zero only for first explicit configuration."
+          }
+        }
+      }
+    }
+  }
+}

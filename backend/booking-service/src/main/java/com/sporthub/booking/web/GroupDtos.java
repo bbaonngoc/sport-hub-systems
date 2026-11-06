@@ -1,0 +1,28 @@
+package com.sporthub.booking.web;
+
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.*;
+
+public final class GroupDtos {
+    private GroupDtos() {}
+    public record CreateGroup(@NotNull UUID holdId,@Size(max=180) String name,
+                              @Min(1) @Max(50) int maxMembers) {}
+    public record JoinGroup(@NotBlank @Size(max=500) String code) {}
+    public record Allocation(@NotNull UUID memberId,@NotNull @DecimalMin("0") @Digits(integer=10,fraction=0) BigDecimal amount) {}
+    public record Split(@NotNull @Pattern(regexp="EQUAL|CUSTOM") String mode,
+                        @Valid @Size(max=50) List<@NotNull Allocation> allocations) {}
+    public record Member(UUID id,UUID userId,String displayName,boolean active,BigDecimal amountDue,
+                         BigDecimal amountPaid,String paymentState,Instant paymentRequestedAt,
+                         Instant lastReminderAt,Instant nextReminderAt,boolean reminderEligible,String reminderBlockedReason) {}
+    public record PaymentReminders(@Size(max=50) List<@NotNull UUID> memberIds,boolean remindAll) {}
+    public record ReminderMemberResult(UUID memberId,String outcome,String reason,Instant lastReminderAt,Instant nextReminderAt) {}
+    public record ReminderResult(int acceptedCount,int skippedCount,List<ReminderMemberResult> members) {}
+    public record Group(UUID id,UUID ownerId,String name,String state,Instant deadline,int maxMembers,
+                        boolean allocationsLocked,BookingDtos.Booking booking,List<Member> members,BigDecimal totalPaid,String financialVisibility) {
+        public Group(UUID id,UUID ownerId,String name,String state,Instant deadline,int maxMembers,boolean allocationsLocked,BookingDtos.Booking booking,List<Member> members,BigDecimal totalPaid){this(id,ownerId,name,state,deadline,maxMembers,allocationsLocked,booking,members,totalPaid,"ACTIVE_MEMBERS");}
+    }
+    public record Invite(String code,String path,String qrSvg,String qrPngDataUrl,Instant expiresAt) {}
+}

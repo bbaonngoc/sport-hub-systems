@@ -1,0 +1,72 @@
+server:
+  port: 8084
+spring:
+  application:
+    name: booking-service
+  datasource:
+    url: ${BOOKING_DB_URL:jdbc:postgresql://localhost:5432/booking_db}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 15
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        jdbc.time_zone: UTC
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD}
+      connect-timeout: ${REDIS_CONNECT_TIMEOUT:2s}
+      timeout: ${REDIS_COMMAND_TIMEOUT:2s}
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME}
+    password: ${RABBITMQ_PASSWORD}
+    virtual-host: ${RABBITMQ_VHOST:sporthub}
+    publisher-confirm-type: correlated
+    publisher-returns: true
+    listener:
+      simple:
+        default-requeue-rejected: false
+        retry:
+          enabled: true
+          max-attempts: 3
+          initial-interval: 1000
+          multiplier: 2
+
+# ── Booking-specific config ───────────────────────────────────
+booking:
+  slot-hold:
+    ttl-seconds: ${BOOKING_HOLD_SECONDS:600} # DEMO_DEFAULT technical TTL
+    max-pending: ${BOOKING_MAX_PENDING:5} # DEMO_DEFAULT anti-spam limit
+    max-slots-per-hold: 10    # Max slots per single hold request
+  advance-days: ${BOOKING_ADVANCE_DAYS:90} # DEMO_DEFAULT technical booking horizon
+  group:
+    deadline-seconds: ${GROUP_PAYMENT_DEADLINE_SECONDS:1800} # DEMO_DEFAULT configurable deadline
+    min-lead-seconds: ${GROUP_MIN_LEAD_SECONDS:900}
+    payment-reminder:
+      min-interval: ${GROUP_REMINDER_MIN_INTERVAL:PT15M} # IMPLEMENTATION_DEFAULT, not a canonical policy value
+
+sporthub:
+  events:
+    outbox:
+      enabled: true
+
+management:
+  endpoints.web.exposure.include: health,info
+logging:
+  level:
+    com.sporthub: DEBUG

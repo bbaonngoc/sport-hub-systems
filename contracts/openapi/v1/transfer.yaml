@@ -1,0 +1,2836 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "SportHub Transfer Marketplace",
+    "version": "1.0.0",
+    "description": "Separate Transfer database. Durable REST saga changes usage rights in Booking only after a verified Payment event. Escrow settlement remains BLOCKED_RULE. Seller identity is excluded from marketplace responses."
+  },
+  "servers": [
+    {
+      "url": "/api/v1"
+    }
+  ],
+  "paths": {
+    "/transfers": {
+      "get": {
+        "operationId": "transferMarket",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Listing"
+                      }
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "data",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Invalid session"
+          },
+          "403": {
+            "description": "Outside actor scope"
+          },
+          "404": {
+            "description": "Resource not found"
+          },
+          "409": {
+            "description": "Conflict or BLOCKED_RULE"
+          },
+          "503": {
+            "description": "Dependency unavailable"
+          }
+        },
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "before",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "maxPrice",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "minimum": 0,
+              "exclusiveMinimum": true
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "start",
+                "price",
+                "discount"
+              ]
+            }
+          }
+        ]
+      },
+      "post": {
+        "operationId": "createTransferListing",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Listing"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "data",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Invalid session"
+          },
+          "403": {
+            "description": "Outside actor scope"
+          },
+          "404": {
+            "description": "Resource not found"
+          },
+          "409": {
+            "description": "Conflict or BLOCKED_RULE"
+          },
+          "503": {
+            "description": "Dependency unavailable"
+          }
+        },
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateListing"
+              }
+            }
+          }
+        },
+        "description": "New commands use PEER_RESALE_V1 only, funded by an eligible original REAL booking. Full P is paid directly B to A via SePay; no facility fee or Owner payout. DEMO and legacy creation/edit are rejected; history and already-open transactions remain recoverable."
+      }
+    },
+    "/transfers/mine": {
+      "get": {
+        "operationId": "myTransferListings",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Listing"
+                      }
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "data",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Invalid session"
+          },
+          "403": {
+            "description": "Outside actor scope"
+          },
+          "404": {
+            "description": "Resource not found"
+          },
+          "409": {
+            "description": "Conflict or BLOCKED_RULE"
+          },
+          "503": {
+            "description": "Dependency unavailable"
+          }
+        }
+      }
+    },
+    "/transfers/{id}": {
+      "get": {
+        "operationId": "transferListing",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Listing"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "data",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Invalid session"
+          },
+          "403": {
+            "description": "Outside actor scope"
+          },
+          "404": {
+            "description": "Resource not found"
+          },
+          "409": {
+            "description": "Conflict or BLOCKED_RULE"
+          },
+          "503": {
+            "description": "Dependency unavailable"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      },
+      "put": {
+        "operationId": "editTransferListing",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Listing"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "data",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Invalid session"
+          },
+          "403": {
+            "description": "Outside actor scope"
+          },
+          "404": {
+            "description": "Resource not found"
+          },
+          "409": {
+            "description": "Conflict or BLOCKED_RULE"
+          },
+          "503": {
+            "description": "Dependency unavailable"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EditListing"
+              }
+            }
+          }
+        },
+        "description": "New commands use PEER_RESALE_V1 only, funded by an eligible original REAL booking. Full P is paid directly B to A via SePay; no facility fee or Owner payout. DEMO and legacy creation/edit are rejected; history and already-open transactions remain recoverable."
+      }
+    },
+    "/transfers/{id}/withdraw": {
+      "post": {
+        "operationId": "withdrawTransferListing",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Listing"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "data",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Invalid session"
+          },
+          "403": {
+            "description": "Outside actor scope"
+          },
+          "404": {
+            "description": "Resource not found"
+          },
+          "409": {
+            "description": "Conflict or BLOCKED_RULE"
+          },
+          "503": {
+            "description": "Dependency unavailable"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            }
+          }
+        ],
+        "description": "P2P yêu cầu body version và Idempotency-Key; không rút sau khi người mua khai tiền.",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PeerListingVersion"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/transfers/{id}/acquisitions": {
+      "post": {
+        "operationId": "acquireTransferListing",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Acquisition"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "data",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Invalid session"
+          },
+          "403": {
+            "description": "Outside actor scope"
+          },
+          "404": {
+            "description": "Resource not found"
+          },
+          "409": {
+            "description": "Conflict or BLOCKED_RULE"
+          },
+          "503": {
+            "description": "Dependency unavailable"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AcquireListing"
+              }
+            }
+          }
+        },
+        "description": "Buyer accepts current terms. Missing x or changed Owner fee prevents a new acquisition until seller requotes. Canonical DEMO SUCCESS automatically transfers booking rights and rotates check-in credentials; no Owner approval and no wait for A payout. A cannot buy own listing."
+      }
+    },
+    "/transfers/acquisitions": {
+      "get": {
+        "operationId": "myTransferAcquisitions",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Acquisition"
+                      }
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "data",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Invalid session"
+          },
+          "403": {
+            "description": "Outside actor scope"
+          },
+          "404": {
+            "description": "Resource not found"
+          },
+          "409": {
+            "description": "Conflict or BLOCKED_RULE"
+          },
+          "503": {
+            "description": "Dependency unavailable"
+          }
+        }
+      }
+    },
+    "/transfers/acquisitions/{id}": {
+      "get": {
+        "operationId": "transferAcquisition",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Acquisition"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "data",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Invalid session"
+          },
+          "403": {
+            "description": "Outside actor scope"
+          },
+          "404": {
+            "description": "Resource not found"
+          },
+          "409": {
+            "description": "Conflict or BLOCKED_RULE"
+          },
+          "503": {
+            "description": "Dependency unavailable"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/transfers/acquisitions/{id}/payable": {
+      "get": {
+        "operationId": "transferPayable",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/TransferPayable"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "data",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Invalid session"
+          },
+          "403": {
+            "description": "Outside actor scope"
+          },
+          "404": {
+            "description": "Resource not found"
+          },
+          "409": {
+            "description": "Conflict or BLOCKED_RULE"
+          },
+          "503": {
+            "description": "Dependency unavailable"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/transfers/acquisitions/{id}/cancel": {
+      "post": {
+        "operationId": "cancelTransferAcquisition",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Acquisition"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "data",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Invalid session"
+          },
+          "403": {
+            "description": "Outside actor scope"
+          },
+          "404": {
+            "description": "Resource not found"
+          },
+          "409": {
+            "description": "Conflict or BLOCKED_RULE"
+          },
+          "503": {
+            "description": "Dependency unavailable"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/transfers/quote": {
+      "post": {
+        "operationId": "quoteTransferListing",
+        "description": "New commands use PEER_RESALE_V1 only, funded by an eligible original REAL booking. Full P is paid directly B to A via SePay; no facility fee or Owner payout. DEMO and legacy creation/edit are rejected; history and already-open transactions remain recoverable.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateListing"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Server-recorded application result. DEMO never requires a bank account or real funds.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/components/schemas/DemoTransferTerms"
+                        },
+                        {
+                          "$ref": "#/components/schemas/FacilityTransferTerms"
+                        },
+                        {
+                          "$ref": "#/components/schemas/PeerSellerTerms"
+                        }
+                      ]
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "data",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Invalid or revoked session"
+          },
+          "403": {
+            "description": "Wrong actor, facility or current grant"
+          },
+          "409": {
+            "description": "Stale terms, state or conflicting idempotency payload"
+          }
+        }
+      }
+    },
+    "/transfers/{id}/quote": {
+      "post": {
+        "operationId": "quoteTransferEdit",
+        "description": "New commands use PEER_RESALE_V1 only, funded by an eligible original REAL booking. Full P is paid directly B to A via SePay; no facility fee or Owner payout. DEMO and legacy creation/edit are rejected; history and already-open transactions remain recoverable.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EditListing"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Server-recorded application result. DEMO never requires a bank account or real funds.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/components/schemas/DemoTransferTerms"
+                        },
+                        {
+                          "$ref": "#/components/schemas/FacilityTransferTerms"
+                        },
+                        {
+                          "$ref": "#/components/schemas/PeerSellerTerms"
+                        }
+                      ]
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "data",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Invalid or revoked session"
+          },
+          "403": {
+            "description": "Wrong actor, facility or current grant"
+          },
+          "409": {
+            "description": "Stale terms, state or conflicting idempotency payload"
+          }
+        }
+      }
+    },
+    "/transfers/acquisitions/{id}/declare-payment": {
+      "post": {
+        "operationId": "declarePeerPayment",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/PeerAttempt"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Invalid session"
+          },
+          "403": {
+            "description": "Outside participant or facility scope"
+          },
+          "404": {
+            "description": "Resource not found"
+          },
+          "409": {
+            "description": "Version, phase or BANK_PROFILE_LOCKED conflict"
+          },
+          "429": {
+            "description": "Rate limited",
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Authoritative dependency unavailable"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PeerCommand"
+              }
+            }
+          }
+        },
+        "description": "Buyer states the money was sent. No receipt, bank reference or evidence is collected; this is a statement, not bank verification."
+      }
+    },
+    "/transfers/acquisitions/{id}/confirm-receipt": {
+      "post": {
+        "operationId": "confirmPeerReceipt",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/PeerAttempt"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Invalid session"
+          },
+          "403": {
+            "description": "Outside participant or facility scope"
+          },
+          "404": {
+            "description": "Resource not found"
+          },
+          "409": {
+            "description": "Version, phase or BANK_PROFILE_LOCKED conflict"
+          },
+          "429": {
+            "description": "Rate limited",
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Authoritative dependency unavailable"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PeerCommand"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/transfers/acquisitions/{id}/deny-receipt": {
+      "post": {
+        "operationId": "denyPeerReceipt",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/PeerAttempt"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Invalid session"
+          },
+          "403": {
+            "description": "Outside participant or facility scope"
+          },
+          "404": {
+            "description": "Resource not found"
+          },
+          "409": {
+            "description": "Version, phase or BANK_PROFILE_LOCKED conflict"
+          },
+          "429": {
+            "description": "Rate limited",
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Authoritative dependency unavailable"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PeerCommand"
+              }
+            }
+          }
+        },
+        "description": "Seller states the money did not arrive: the attempt ends immediately, the court stays with the seller and the listing reopens. The parties settle any money offline through the facility Owner."
+      }
+    },
+    "/transfers/acquisitions/{id}/peer": {
+      "get": {
+        "operationId": "getPeerAttempt",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/PeerAttempt"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Invalid session"
+          },
+          "403": {
+            "description": "Outside participant or facility scope"
+          },
+          "404": {
+            "description": "Resource not found"
+          },
+          "409": {
+            "description": "Version, phase or BANK_PROFILE_LOCKED conflict"
+          },
+          "429": {
+            "description": "Rate limited",
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Authoritative dependency unavailable"
+          }
+        }
+      }
+    },
+    "/transfers/conversations/{id}/messages": {
+      "get": {
+        "operationId": "getPeerMessages",
+        "description": "Without a cursor, returns the latest page in ascending cursor order. Use after for new messages or before for older history; the two cursors are mutually exclusive.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "description": "Read messages newer than this cursor; after=0 explicitly reads from the beginning.",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 0
+            }
+          },
+          {
+            "name": "before",
+            "in": "query",
+            "description": "Read the nearest older page before this cursor, returned in ascending order. Cannot be combined with after.",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/PeerMessage"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Invalid session"
+          },
+          "403": {
+            "description": "Outside participant or facility scope"
+          },
+          "404": {
+            "description": "Resource not found"
+          },
+          "409": {
+            "description": "Version, phase or BANK_PROFILE_LOCKED conflict"
+          },
+          "429": {
+            "description": "Rate limited",
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Authoritative dependency unavailable"
+          }
+        }
+      },
+      "post": {
+        "operationId": "sendPeerMessage",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/PeerMessage"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Invalid session"
+          },
+          "403": {
+            "description": "Outside participant or facility scope"
+          },
+          "404": {
+            "description": "Resource not found"
+          },
+          "409": {
+            "description": "Version, phase or BANK_PROFILE_LOCKED conflict"
+          },
+          "429": {
+            "description": "Rate limited",
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Authoritative dependency unavailable"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PeerMessageInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/transfers/acquisitions/{id}/release": {
+      "post": {
+        "summary": "Người mua hủy lượt giữ P2P chưa khai chuyển tiền",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PeerCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Kết quả canonical; không phát sinh hoàn tiền."
+          },
+          "409": {
+            "description": "Đã khai tiền hoặc phiên bản đã đổi."
+          },
+          "503": {
+            "description": "Chưa rõ kết quả; đối chiếu cùng mã yêu cầu."
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "Venue": {
+        "type": "object",
+        "properties": {
+          "facilityName": {
+            "type": "string"
+          },
+          "courtName": {
+            "type": "string"
+          },
+          "sportCategoryId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "address": {
+            "type": "string",
+            "description": "House number, street and additional address details from the facility."
+          },
+          "provinceCode": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 2,
+            "pattern": "^[0-9]{2}$",
+            "description": "Current administrative code on newly created snapshots; absent on retained legacy snapshots, or null for an unmapped legacy facility.",
+            "nullable": true
+          },
+          "province": {
+            "type": "string",
+            "description": "Province/city display name."
+          },
+          "wardCode": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 5,
+            "pattern": "^[0-9]{5}$",
+            "description": "Current administrative code on newly created snapshots; absent on retained legacy snapshots, or null for an unmapped legacy facility.",
+            "nullable": true
+          },
+          "ward": {
+            "type": "string",
+            "description": "Commune/ward display name on current two-level address snapshots."
+          },
+          "timezone": {
+            "type": "string"
+          },
+          "amenities": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "facilityName",
+          "courtName",
+          "sportCategoryId",
+          "address",
+          "province",
+          "timezone",
+          "amenities"
+        ],
+        "description": "New venue snapshots include province/city and commune/ward codes and display names. Historical immutable snapshots may omit the current administrative codes and commune/ward field."
+      },
+      "Listing": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "facilityId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "courtId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "venue": {
+            "$ref": "#/components/schemas/Venue"
+          },
+          "originalAmount": {
+            "type": "number",
+            "minimum": 0,
+            "exclusiveMinimum": true
+          },
+          "price": {
+            "type": "number",
+            "minimum": 0,
+            "exclusiveMinimum": true
+          },
+          "currency": {
+            "type": "string"
+          },
+          "startsAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endsAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "deadline": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "LOCKED",
+              "COMPLETED",
+              "WITHDRAWN",
+              "EXPIRED",
+              "PENDING_AUDIT"
+            ]
+          },
+          "own": {
+            "type": "boolean"
+          },
+          "available": {
+            "type": "boolean"
+          },
+          "version": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "financeTerms": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DemoTransferTerms"
+              },
+              {
+                "$ref": "#/components/schemas/FacilityTransferTerms"
+              },
+              {
+                "$ref": "#/components/schemas/PeerPublicTerms"
+              }
+            ],
+            "description": "P2P công khai chỉ có điều khoản, giá, chính sách hoàn và phiên bản đồng ý chia sẻ; không có danh tính hoặc tài khoản ngân hàng."
+          },
+          "protocol": {
+            "type": "string",
+            "enum": [
+              "LEGACY_OWNER",
+              "PEER_RESALE_V1"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "facilityId",
+          "courtId",
+          "venue",
+          "originalAmount",
+          "price",
+          "currency",
+          "startsAt",
+          "endsAt",
+          "deadline",
+          "state",
+          "own",
+          "available",
+          "version"
+        ]
+      },
+      "Acquisition": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "listingId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "bookingId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "buyerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "amount": {
+            "type": "number",
+            "minimum": 0,
+            "exclusiveMinimum": true
+          },
+          "currency": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "PENDING_HANDOFF",
+              "SUCCESS",
+              "CANCELLED",
+              "EXPIRED",
+              "FAILED",
+              "PENDING_AUDIT"
+            ]
+          },
+          "paymentId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "financeTerms": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DemoTransferTerms"
+              },
+              {
+                "$ref": "#/components/schemas/FacilityTransferTerms"
+              },
+              {
+                "$ref": "#/components/schemas/PeerAcquisitionTerms"
+              }
+            ],
+            "description": "Điều khoản riêng tư chỉ A/B được đọc. Lịch sử legacy giữ nguyên."
+          },
+          "protocol": {
+            "type": "string",
+            "enum": [
+              "PEER_RESALE_V1"
+            ],
+            "description": "Present only for the direct resale cohort."
+          },
+          "peer": {
+            "$ref": "#/components/schemas/PeerAttempt"
+          },
+          "conversationId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Private conversation of the acquisition participants."
+          }
+        },
+        "required": [
+          "id",
+          "listingId",
+          "bookingId",
+          "buyerId",
+          "amount",
+          "currency",
+          "expiresAt",
+          "state",
+          "paymentId"
+        ]
+      },
+      "CreateListing": {
+        "type": "object",
+        "properties": {
+          "bookingId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "price": {
+            "type": "number",
+            "minimum": 0,
+            "exclusiveMinimum": true
+          },
+          "deadline": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "acceptedTermsHash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "description": "Bắt buộc khi thực hiện sau báo giá và đồng ý rõ điều khoản. P2P bao gồm phiên bản đồng ý chia sẻ tài khoản cho B và SePay."
+          },
+          "beneficiaryRevisionId": {
+            "type": "string",
+            "format": "uuid",
+            "deprecated": true,
+            "description": "Retained legacy field. Ignored for DEMO; no beneficiary account is required."
+          },
+          "bankDestinationRevisionId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "bookingId",
+          "price",
+          "deadline"
+        ]
+      },
+      "EditListing": {
+        "type": "object",
+        "properties": {
+          "price": {
+            "type": "number",
+            "minimum": 0,
+            "exclusiveMinimum": true
+          },
+          "deadline": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "acceptedTermsHash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "description": "Bắt buộc khi thực hiện sau báo giá và đồng ý rõ điều khoản. P2P bao gồm phiên bản đồng ý chia sẻ tài khoản cho B và SePay."
+          },
+          "beneficiaryRevisionId": {
+            "type": "string",
+            "format": "uuid",
+            "deprecated": true,
+            "description": "Retained legacy field. Ignored for DEMO; no beneficiary account is required."
+          },
+          "bankDestinationRevisionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expectedVersion": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Bắt buộc với tin P2P, phiên bản tin đã xem."
+          }
+        },
+        "required": [
+          "price",
+          "deadline"
+        ]
+      },
+      "TransferPayable": {
+        "type": "object",
+        "properties": {
+          "bookingId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "payerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sellerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "acquisitionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "amount": {
+            "type": "number",
+            "minimum": 0,
+            "exclusiveMinimum": true
+          },
+          "currency": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "purpose": {
+            "type": "string",
+            "enum": [
+              "TRANSFER"
+            ]
+          },
+          "transferTerms": {
+            "$ref": "#/components/schemas/DemoTransferTerms"
+          },
+          "moneyClass": {
+            "type": "string",
+            "enum": [
+              "REAL",
+              "DEMO",
+              "UNKNOWN"
+            ]
+          }
+        },
+        "required": [
+          "bookingId",
+          "payerId",
+          "sellerId",
+          "acquisitionId",
+          "amount",
+          "currency",
+          "expiresAt",
+          "purpose"
+        ]
+      },
+      "DemoTransferTerms": {
+        "type": "object",
+        "properties": {
+          "mode": {
+            "type": "string",
+            "enum": [
+              "DEMO"
+            ]
+          },
+          "provider": {
+            "type": "string",
+            "enum": [
+              "DEMO"
+            ]
+          },
+          "moneyClass": {
+            "type": "string",
+            "enum": [
+              "DEMO"
+            ]
+          },
+          "receiverFacilityId": {
+            "type": "string",
+            "format": "uuid",
+            "readOnly": true
+          },
+          "receiverOwnerId": {
+            "type": "string",
+            "format": "uuid",
+            "readOnly": true
+          },
+          "receiverName": {
+            "type": "string",
+            "readOnly": true
+          },
+          "policyVersion": {
+            "type": "integer",
+            "format": "int64",
+            "readOnly": true
+          },
+          "feeBps": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 10000,
+            "readOnly": true
+          },
+          "feePolicyHash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "amount": {
+            "type": "string",
+            "pattern": "^-?[0-9]+(?:\\.[0-9]+)?$",
+            "readOnly": true,
+            "description": "Exact VND decimal string. DEMO application amount; no real transfer of funds."
+          },
+          "quotedFeeAmount": {
+            "type": "string",
+            "pattern": "^-?[0-9]+(?:\\.[0-9]+)?$",
+            "readOnly": true,
+            "description": "Exact VND decimal string. DEMO application amount; no real transfer of funds."
+          },
+          "quotedSellerNetAmount": {
+            "type": "string",
+            "pattern": "^-?[0-9]+(?:\\.[0-9]+)?$",
+            "readOnly": true,
+            "description": "Exact VND decimal string. DEMO application amount; no real transfer of funds."
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "VND"
+            ]
+          },
+          "rounding": {
+            "type": "string",
+            "enum": [
+              "HALF_UP"
+            ]
+          },
+          "termsHash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "sellerTermsHash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "refundPolicy": {
+            "type": "object",
+            "description": "Immutable booking-accepted independent cancellation r policy; configured, id, version, rateBps, currency, rounding, termsHash.",
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "mode",
+          "receiverFacilityId",
+          "receiverName",
+          "policyVersion",
+          "feeBps",
+          "amount",
+          "quotedFeeAmount",
+          "quotedSellerNetAmount",
+          "termsHash",
+          "refundPolicy"
+        ],
+        "description": "Server snapshot; public listing excludes booking/seller/buyer/Owner identity and credentials. Quote/acquisition participant data contains the necessary private bindings. Facility owns F=HALF_UP(P*x/10000); N=P-F owed to A. SportHub earns none. No bank setup; x is not fixed. Current policy change requires seller requote before acquisition; locked acquisitions never reprice."
+      },
+      "AcquireListing": {
+        "type": "object",
+        "properties": {
+          "acceptedTermsHash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "description": "Explicit buyer consent to the current server listing terms; required for DEMO."
+          }
+        },
+        "required": [
+          "acceptedTermsHash"
+        ]
+      },
+      "FacilityTransferTerms": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "moneyClass": {
+            "type": "string",
+            "enum": [
+              "REAL"
+            ]
+          },
+          "protocol": {
+            "type": "string",
+            "enum": [
+              "FACILITY_REAL_V1"
+            ]
+          },
+          "amount": {
+            "type": "string",
+            "pattern": "^[0-9]+$"
+          },
+          "feeBps": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 10000
+          },
+          "quotedFeeAmount": {
+            "type": "string",
+            "pattern": "^[0-9]+$"
+          },
+          "quotedSellerNetAmount": {
+            "type": "string",
+            "pattern": "^[0-9]+$"
+          },
+          "policyVersion": {
+            "type": "integer"
+          },
+          "receiverOwnerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "receiverRevisionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sellerDestinationRevisionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "termsHash": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "moneyClass",
+          "protocol",
+          "amount",
+          "feeBps",
+          "quotedFeeAmount",
+          "quotedSellerNetAmount",
+          "policyVersion",
+          "receiverOwnerId",
+          "receiverRevisionId",
+          "sellerDestinationRevisionId",
+          "termsHash"
+        ],
+        "description": "B pays P to facility. Facility earns F=HALF_UP(P*x/10000); A is owed N=P-F. No fixed/default 2% or SportHub revenue. B rights do not wait for manual payout. Cancellation rate r is independent."
+      },
+      "PeerCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "version": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "termsHash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        },
+        "required": [
+          "version",
+          "termsHash"
+        ]
+      },
+      "PeerMessageInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          }
+        },
+        "required": [
+          "text"
+        ]
+      },
+      "PeerMessage": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "cursor": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "senderId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "text": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "cursor",
+          "senderId",
+          "text",
+          "createdAt"
+        ]
+      },
+      "PeerAttempt": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "listingId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "bookingId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sellerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "buyerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "protocol": {
+            "type": "string",
+            "enum": [
+              "PEER_RESALE_V1"
+            ]
+          },
+          "phase": {
+            "type": "string",
+            "enum": [
+              "WAITING_PAYMENT",
+              "PAYMENT_DECLARED",
+              "DISPUTED",
+              "HANDOFF_PENDING",
+              "COMPLETED",
+              "EXPIRED",
+              "ABORTED_A_RETAINS",
+              "TIMED_OUT_A_RETAINS"
+            ]
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "amount": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "VND"
+            ]
+          },
+          "payBy": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "usageDecisionBy": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "conversationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "termsHash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "confirmationMethod": {
+            "type": "string",
+            "enum": [
+              "NONE",
+              "BUYER_DECLARED",
+              "COUNTERPARTY_ACKNOWLEDGED",
+              "OWNER_ADJUDICATED"
+            ]
+          },
+          "decision": {
+            "type": "object",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "listingId",
+          "bookingId",
+          "sellerId",
+          "buyerId",
+          "protocol",
+          "phase",
+          "version",
+          "amount",
+          "currency",
+          "payBy",
+          "usageDecisionBy",
+          "conversationId",
+          "termsHash",
+          "confirmationMethod",
+          "decision"
+        ],
+        "description": "Only an original REAL booking with sufficient applied collection may enter PEER_RESALE_V1; DEMO bookings are not real peer-payment funding."
+      },
+      "PeerListingVersion": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "version"
+        ],
+        "properties": {
+          "version": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      },
+      "PeerPublicTerms": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "protocol",
+          "mode",
+          "currency",
+          "amount",
+          "termsHash",
+          "bankSharingConsent",
+          "refundPolicy"
+        ],
+        "properties": {
+          "protocol": {
+            "type": "string",
+            "enum": [
+              "PEER_RESALE_V1"
+            ]
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "REAL"
+            ]
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "VND"
+            ]
+          },
+          "amount": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,9}$"
+          },
+          "termsHash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "bankSharingConsent": {
+            "type": "string",
+            "enum": [
+              "BUYER_AND_SEPAY_QR_V1"
+            ]
+          },
+          "refundPolicy": {
+            "type": "object",
+            "required": [
+              "rateBps",
+              "termsHash"
+            ],
+            "properties": {
+              "configured": {
+                "type": "boolean"
+              },
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "version": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "rateBps": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 10000
+              },
+              "currency": {
+                "type": "string",
+                "enum": [
+                  "VND"
+                ]
+              },
+              "rounding": {
+                "type": "string",
+                "enum": [
+                  "HALF_UP"
+                ]
+              },
+              "termsHash": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              }
+            },
+            "nullable": true
+          }
+        }
+      },
+      "PeerSellerTerms": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "protocol",
+          "mode",
+          "currency",
+          "amount",
+          "termsHash",
+          "bankSharingConsent",
+          "refundPolicy",
+          "moneyClass",
+          "bookingId",
+          "facilityId",
+          "courtId",
+          "sellerId",
+          "originalAmount",
+          "startsAt",
+          "endsAt",
+          "deadline",
+          "bankDestinationRevisionId",
+          "destinationHash"
+        ],
+        "properties": {
+          "protocol": {
+            "type": "string",
+            "enum": [
+              "PEER_RESALE_V1"
+            ]
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "REAL"
+            ]
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "VND"
+            ]
+          },
+          "amount": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,9}$"
+          },
+          "termsHash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "bankSharingConsent": {
+            "type": "string",
+            "enum": [
+              "BUYER_AND_SEPAY_QR_V1"
+            ]
+          },
+          "refundPolicy": {
+            "type": "object",
+            "required": [
+              "rateBps",
+              "termsHash"
+            ],
+            "properties": {
+              "configured": {
+                "type": "boolean"
+              },
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "version": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "rateBps": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 10000
+              },
+              "currency": {
+                "type": "string",
+                "enum": [
+                  "VND"
+                ]
+              },
+              "rounding": {
+                "type": "string",
+                "enum": [
+                  "HALF_UP"
+                ]
+              },
+              "termsHash": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              }
+            },
+            "nullable": true
+          },
+          "moneyClass": {
+            "type": "string",
+            "enum": [
+              "REAL"
+            ]
+          },
+          "bookingId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "facilityId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "courtId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sellerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "originalAmount": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,9}$"
+          },
+          "startsAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endsAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "deadline": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "bankDestinationRevisionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "destinationHash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        }
+      },
+      "PeerAcquisitionTerms": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "protocol",
+          "mode",
+          "currency",
+          "amount",
+          "termsHash",
+          "bankSharingConsent",
+          "refundPolicy",
+          "moneyClass",
+          "bookingId",
+          "facilityId",
+          "courtId",
+          "sellerId",
+          "originalAmount",
+          "startsAt",
+          "endsAt",
+          "deadline",
+          "bankDestinationRevisionId",
+          "destinationHash",
+          "sellerTermsHash",
+          "listingId",
+          "listingVersion",
+          "acquisitionId",
+          "buyerId",
+          "expiresAt",
+          "acceptedAt"
+        ],
+        "properties": {
+          "protocol": {
+            "type": "string",
+            "enum": [
+              "PEER_RESALE_V1"
+            ]
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "REAL"
+            ]
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "VND"
+            ]
+          },
+          "amount": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,9}$"
+          },
+          "termsHash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "bankSharingConsent": {
+            "type": "string",
+            "enum": [
+              "BUYER_AND_SEPAY_QR_V1"
+            ]
+          },
+          "refundPolicy": {
+            "type": "object",
+            "required": [
+              "rateBps",
+              "termsHash"
+            ],
+            "properties": {
+              "configured": {
+                "type": "boolean"
+              },
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "version": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "rateBps": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 10000
+              },
+              "currency": {
+                "type": "string",
+                "enum": [
+                  "VND"
+                ]
+              },
+              "rounding": {
+                "type": "string",
+                "enum": [
+                  "HALF_UP"
+                ]
+              },
+              "termsHash": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              }
+            },
+            "nullable": true
+          },
+          "moneyClass": {
+            "type": "string",
+            "enum": [
+              "REAL"
+            ]
+          },
+          "bookingId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "facilityId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "courtId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sellerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "originalAmount": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,9}$"
+          },
+          "startsAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endsAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "deadline": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "bankDestinationRevisionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "destinationHash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "sellerTermsHash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "listingId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "listingVersion": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "acquisitionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "buyerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "acceptedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    }
+  }
+}

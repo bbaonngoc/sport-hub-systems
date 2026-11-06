@@ -1,0 +1,5549 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "SportHub Booking",
+    "version": "1.1.0"
+  },
+  "servers": [
+    {
+      "url": "/api/v1"
+    }
+  ],
+  "paths": {
+    "/bookings/availability": {
+      "get": {
+        "operationId": "getAvailability",
+        "summary": "getAvailability",
+        "parameters": [
+          {
+            "name": "courtId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Preview"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "data",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Invalid session"
+          },
+          "403": {
+            "description": "Not authorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "409": {
+            "description": "Conflict, expired hold or blocked policy"
+          }
+        }
+      }
+    },
+    "/bookings/holds": {
+      "post": {
+        "operationId": "createHold",
+        "summary": "createHold",
+        "description": "Personal online holds reject the facility owner, including hold replay. Counter holds require facility-scoped operational access and are for guests or other Customers. Ownership lookup failure rejects the request without reserving capacity.",
+        "parameters": [
+          {
+            "name": "counter",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Hold"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "data",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Invalid session"
+          },
+          "403": {
+            "description": "Not authorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "409": {
+            "description": "Conflict, expired hold or blocked policy"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HoldInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/bookings/holds/{id}": {
+      "get": {
+        "operationId": "getHold",
+        "summary": "getHold",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Hold"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "data",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Invalid session"
+          },
+          "403": {
+            "description": "Not authorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "409": {
+            "description": "Conflict, expired hold or blocked policy"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "releaseHold",
+        "summary": "releaseHold",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Success"
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Invalid session"
+          },
+          "403": {
+            "description": "Not authorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "409": {
+            "description": "Conflict, expired hold or blocked policy"
+          }
+        }
+      }
+    },
+    "/bookings": {
+      "post": {
+        "operationId": "createBooking",
+        "summary": "createBooking",
+        "parameters": [
+          {
+            "name": "counter",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100,
+              "pattern": "^[A-Za-z0-9_.:-]+$"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Booking"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "data",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Invalid session"
+          },
+          "403": {
+            "description": "Not authorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "409": {
+            "description": "Conflict, expired hold or blocked policy"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateInput"
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "getMyBookings",
+        "summary": "getMyBookings",
+        "parameters": [],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Booking"
+                      }
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "data",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Invalid session"
+          },
+          "403": {
+            "description": "Not authorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "409": {
+            "description": "Conflict, expired hold or blocked policy"
+          }
+        }
+      }
+    },
+    "/bookings/facility/{id}": {
+      "get": {
+        "operationId": "getFacilityBookings",
+        "summary": "getFacilityBookings",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Booking"
+                      }
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "data",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Invalid session"
+          },
+          "403": {
+            "description": "Not authorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "409": {
+            "description": "Conflict, expired hold or blocked policy"
+          }
+        }
+      }
+    },
+    "/bookings/{id}": {
+      "get": {
+        "operationId": "getBookingDetail",
+        "summary": "getBookingDetail",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Detail"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "data",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Invalid session"
+          },
+          "403": {
+            "description": "Not authorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "409": {
+            "description": "Conflict, expired hold or blocked policy"
+          }
+        }
+      }
+    },
+    "/bookings/{id}/payable": {
+      "get": {
+        "operationId": "getBookingPayable",
+        "summary": "getBookingPayable",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Payable"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "data",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Invalid session"
+          },
+          "403": {
+            "description": "Not authorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "409": {
+            "description": "Conflict, expired hold or blocked policy"
+          }
+        }
+      }
+    },
+    "/bookings/{id}/cancel": {
+      "post": {
+        "operationId": "cancelPendingBooking",
+        "summary": "cancelPendingBooking",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Booking"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "data",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Invalid session"
+          },
+          "403": {
+            "description": "Not authorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "409": {
+            "description": "Conflict, expired hold or blocked policy"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CancelInput"
+              }
+            }
+          }
+        },
+        "description": "Release an unpaid booking hold by its own Customer or original counter creator. Facility operations do not grant authority to cancel another Customer booking. Paid bookings cannot be self-cancelled or cancelled under a facility refund policy."
+      }
+    },
+    "/bookings/{id}/check-in": {
+      "post": {
+        "operationId": "checkInBooking",
+        "summary": "checkInBooking",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Booking"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "data",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Invalid session"
+          },
+          "403": {
+            "description": "Not authorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "409": {
+            "description": "Conflict, expired hold or blocked policy"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckinInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/bookings/{id}/complete": {
+      "post": {
+        "operationId": "completeBooking",
+        "summary": "completeBooking",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Booking"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "data",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Invalid session"
+          },
+          "403": {
+            "description": "Not authorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "409": {
+            "description": "Conflict, expired hold or blocked policy"
+          }
+        }
+      }
+    },
+    "/groups": {
+      "get": {
+        "operationId": "listMyGroups",
+        "tags": [
+          "Group Booking"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Group"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Membership, owner, payer or signed invite mismatch"
+          },
+          "409": {
+            "description": "Deadline, slot, allocation or isolated BLOCKED_RULE conflict"
+          }
+        }
+      },
+      "post": {
+        "operationId": "createGroupBooking",
+        "tags": [
+          "Group Booking"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Successful result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Group"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Membership, owner, payer or signed invite mismatch"
+          },
+          "409": {
+            "description": "Deadline, slot, allocation or isolated BLOCKED_RULE conflict"
+          }
+        },
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateGroup"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/groups/{id}": {
+      "get": {
+        "operationId": "getGroupBooking",
+        "tags": [
+          "Group Booking"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Group"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Membership, owner, payer or signed invite mismatch"
+          },
+          "409": {
+            "description": "Deadline, slot, allocation or isolated BLOCKED_RULE conflict"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/groups/{id}/invite": {
+      "get": {
+        "operationId": "getGroupInvitation",
+        "tags": [
+          "Group Booking"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/GroupInvite"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Membership, owner, payer or signed invite mismatch"
+          },
+          "409": {
+            "description": "Deadline, slot, allocation or isolated BLOCKED_RULE conflict"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/groups/invitations": {
+      "get": {
+        "operationId": "previewGroupInvitation",
+        "tags": [
+          "Group Booking"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Group"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Membership, owner, payer or signed invite mismatch"
+          },
+          "409": {
+            "description": "Deadline, slot, allocation or isolated BLOCKED_RULE conflict"
+          }
+        },
+        "parameters": [
+          {
+            "name": "code",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/groups/join": {
+      "post": {
+        "operationId": "joinGroupBooking",
+        "tags": [
+          "Group Booking"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Group"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Membership, owner, payer or signed invite mismatch"
+          },
+          "409": {
+            "description": "Deadline, slot, allocation or isolated BLOCKED_RULE conflict"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JoinGroup"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/groups/{id}/leave": {
+      "post": {
+        "operationId": "leaveGroupBooking",
+        "tags": [
+          "Group Booking"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Group"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Membership, owner, payer or signed invite mismatch"
+          },
+          "409": {
+            "description": "Deadline, slot, allocation or isolated BLOCKED_RULE conflict"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/groups/{id}/cancel": {
+      "post": {
+        "operationId": "cancelUnpaidGroup",
+        "tags": [
+          "Group Booking"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Group"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Membership, owner, payer or signed invite mismatch"
+          },
+          "409": {
+            "description": "Deadline, slot, allocation or isolated BLOCKED_RULE conflict"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CancelInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/groups/{id}/allocations": {
+      "put": {
+        "operationId": "splitGroupCost",
+        "tags": [
+          "Group Booking"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Group"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Membership, owner, payer or signed invite mismatch"
+          },
+          "409": {
+            "description": "Deadline, slot, allocation or isolated BLOCKED_RULE conflict"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GroupSplit"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/groups/{id}/members/{memberId}/payable": {
+      "get": {
+        "operationId": "getContributionPayable",
+        "tags": [
+          "Group Booking"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Payable"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Membership, owner, payer or signed invite mismatch"
+          },
+          "409": {
+            "description": "Deadline, slot, allocation or isolated BLOCKED_RULE conflict"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "memberId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/bookings/search": {
+      "get": {
+        "tags": [
+          "Booking"
+        ],
+        "operationId": "searchPublicCourtAvailability",
+        "summary": "Search approved enabled courts using real available slots and prices",
+        "description": "Read-only aggregation: Facility owns location/category metadata; Schedule owns hours/pricing; Booking excludes reservations. AND filters. Returns 503 when a dependency is unavailable rather than false empty results. No holds or price snapshots are created.",
+        "security": [],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 180
+            }
+          },
+          {
+            "name": "provinceCode",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 2,
+              "pattern": "^[0-9]{2}$",
+              "description": "Current Vietnam province/city code from Open Admin Data. Keep leading zeroes."
+            },
+            "description": "Filter by the selected current province/city code, rather than free-form display text."
+          },
+          {
+            "name": "sportCategoryId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Defaults to today in Asia/Ho_Chi_Minh; within configured booking.advance-days."
+          },
+          {
+            "name": "opensAfter",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-2][0-9]:[0-5][0-9]$"
+            },
+            "description": "Whole available slots inside the local facility time window; not a reservation."
+          },
+          {
+            "name": "closesBefore",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-2][0-9]:[0-5][0-9]$"
+            },
+            "description": "Whole available slots inside the local facility time window; not a reservation."
+          },
+          {
+            "name": "minPrice",
+            "in": "query",
+            "schema": {
+              "type": "number",
+              "minimum": 0
+            },
+            "description": "Price for each matching slot in VND, not a total multi-slot quote."
+          },
+          {
+            "name": "maxPrice",
+            "in": "query",
+            "schema": {
+              "type": "number",
+              "minimum": 0
+            },
+            "description": "Price for each matching slot in VND, not a total multi-slot quote."
+          },
+          {
+            "name": "latitude",
+            "in": "query",
+            "schema": {
+              "type": "number",
+              "minimum": -90,
+              "maximum": 90
+            }
+          },
+          {
+            "name": "longitude",
+            "in": "query",
+            "schema": {
+              "type": "number",
+              "minimum": -180,
+              "maximum": 180
+            }
+          },
+          {
+            "name": "radiusKm",
+            "in": "query",
+            "schema": {
+              "type": "number",
+              "minimum": 0,
+              "exclusiveMinimum": true,
+              "maximum": 500
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "NAME",
+                "PRICE_ASC",
+                "PRICE_DESC",
+                "DISTANCE"
+              ],
+              "default": "NAME"
+            },
+            "description": "Distance requires both origin coordinates."
+          },
+          {
+            "name": "district",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "description": "Former district name, matched without diacritics. Only Hanoi has a mapping for now."
+          },
+          {
+            "name": "ward",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "description": "Current ward or commune name, matched without diacritics."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Available courts",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DiscoverySearchResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid text/date/time/price/coordinate/sort criteria"
+          },
+          "503": {
+            "description": "Upstream search or availability data temporarily unavailable"
+          }
+        }
+      }
+    },
+    "/groups/{id}/payment-reminders": {
+      "post": {
+        "operationId": "sendGroupPaymentReminders",
+        "tags": [
+          "Group Booking"
+        ],
+        "summary": "Booking Owner manually reminds unpaid other members",
+        "description": "UC-6.7. Group owner ID only; Facility OWNER/STAFF has no override. Requires allocated GROUP_PENDING/PENDING before contribution deadline. Under payment/expiry lock, paid, inactive, self and cooldown members are skipped individually. All mode examines current active other members. Timestamp/history/outbox commit atomically. Enqueue failure rolls back the batch for retry. 200 means accepted into Booking outbox, not delivered; existing broker/contact delivery retries handle later failures. No financial mutation.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PaymentReminderSelection"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Per-member acceptance/skip, including paid-race and cooldown with server nextReminderAt.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/PaymentReminderResult"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid/ambiguous/empty selection, duplicate/null IDs or malformed UUID"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Only this Booking Owner may send"
+          },
+          "404": {
+            "description": "Group not found"
+          },
+          "409": {
+            "description": "Contribution window/state closed or costs not allocated"
+          },
+          "503": {
+            "description": "Outbox acceptance failed; batch rolled back, retry permitted"
+          }
+        }
+      }
+    },
+    "/bookings/reports/facility/{id}/dashboard": {
+      "get": {
+        "operationId": "ownerFacilityDashboard",
+        "summary": "Owner facility dashboard",
+        "description": "Current scoped OWNER only. REAL defaults in LIVE; DEMO remains a separate read cohort. R applied court money at paidAt, native cash at bankTime, F committed handoffAt, N/H outgoing at manually recorded confirmedAt. R+F and R+F-H are facility figures; P and seller payout remain separate cashflow. One inclusive facility IANA date range, max366 dates. Partial/missing source is explicit; no network under local snapshot. Due balance cutoff=min(endExclusive,asOf). PEER_RESALE_V1 is returned in peer with its own bounded page and assurance, never included in facility R/F/P/N/H cashflow. Original LEGACY_OWNER terms are preserved.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "fromDate",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Inclusive facility calendar date. Supply both dates or neither; defaults to today and six previous dates."
+          },
+          {
+            "name": "toDate",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Inclusive facility calendar date; max 366 calendar dates, UTC bounds [from,to). Browser timezone is not used."
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25
+            }
+          },
+          {
+            "name": "mode",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "REAL",
+                "DEMO"
+              ]
+            },
+            "description": "Server defaults REAL in LIVE; cohorts are never combined."
+          },
+          {
+            "name": "peerPage",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            },
+            "description": "Independent direct peer transaction page, using the same size/date/facility/mode."
+          },
+          {
+            "name": "moneySource",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ALL",
+                "CASH",
+                "BANK"
+              ],
+              "default": "ALL"
+            },
+            "description": "Filter verified real court receipts by collection method; ALL is CASH plus BANK."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped facility report with REAL/DEMO mode and evidence coverage.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/DemoFacilityDashboard"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "data",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid date pair, date range longer than 366 calendar dates, page or size"
+          },
+          "401": {
+            "description": "Invalid or revoked session"
+          },
+          "403": {
+            "description": "Facility is outside ownership"
+          },
+          "503": {
+            "description": "Ownership cannot be verified"
+          }
+        }
+      }
+    },
+    "/bookings/reports/facility/{id}/transactions": {
+      "get": {
+        "operationId": "ownerFacilityTransactions",
+        "summary": "Owner facility transactions",
+        "description": "Current scoped OWNER only. REAL defaults in LIVE; DEMO remains a separate read cohort. R applied court money at paidAt, native cash at bankTime, F committed handoffAt, N/H outgoing at manually recorded confirmedAt. R+F and R+F-H are facility figures; P and seller payout remain separate cashflow. One inclusive facility IANA date range, max366 dates. Partial/missing source is explicit; no network under local snapshot. Due balance cutoff=min(endExclusive,asOf).",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "fromDate",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Inclusive facility calendar date. Supply both dates or neither; defaults to today and six previous dates."
+          },
+          {
+            "name": "toDate",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Inclusive facility calendar date; max 366 calendar dates, UTC bounds [from,to). Browser timezone is not used."
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25
+            }
+          },
+          {
+            "name": "mode",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "REAL",
+                "DEMO"
+              ]
+            },
+            "description": "Server defaults REAL in LIVE; cohorts are never combined."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped facility report with REAL/DEMO mode and evidence coverage.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/DemoReportPage"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "data",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid date pair, date range longer than 366 calendar dates, page or size"
+          },
+          "401": {
+            "description": "Invalid or revoked session"
+          },
+          "403": {
+            "description": "Facility is outside ownership"
+          },
+          "503": {
+            "description": "Ownership cannot be verified"
+          }
+        }
+      }
+    },
+    "/bookings/counter": {
+      "post": {
+        "tags": [
+          "Booking"
+        ],
+        "summary": "Create counter booking for a guest or another Customer",
+        "description": "Owner or authorized Staff can create bookings at their facility. The operator remains createdBy, not the guest holder. A linked Customer cannot be the facility owner. Existing quote snapshot compatibility does not grant policy cancellation rights.",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CounterInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created or idempotently replayed booking",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Booking"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Unconfigured, missing or stale refund policy; no new hold or booking is committed"
+          }
+        }
+      }
+    },
+    "/bookings/demo-finance/facility/{id}": {
+      "get": {
+        "operationId": "facilityDemoFinance",
+        "description": "Owner or active scoped Staff with TRANSFER_PAYOUT or BOOKING_REFUND. Each grant exposes only its relevant obligations. Up to 200 recent obligations per kind; operational current state, independent from the historical report date filter.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Server-recorded application result. DEMO never requires a bank account or real funds.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/DemoFacilityFinance"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "data",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Invalid or revoked session"
+          },
+          "403": {
+            "description": "Wrong actor, facility or current grant"
+          },
+          "409": {
+            "description": "Stale terms, state or conflicting idempotency payload"
+          }
+        }
+      }
+    },
+    "/bookings/demo-finance/mine": {
+      "get": {
+        "operationId": "myDemoFinance",
+        "description": "Customer participant read only. Only own seller/buyer obligations and own refund allocations; walk-in Guest refunds never become the creating Staff personal money.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Server-recorded application result. DEMO never requires a bank account or real funds.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/DemoParticipantFinance"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "data",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Invalid or revoked session"
+          },
+          "403": {
+            "description": "Wrong actor, facility or current grant"
+          },
+          "409": {
+            "description": "Stale terms, state or conflicting idempotency payload"
+          }
+        }
+      }
+    },
+    "/bookings/demo-finance/settlements/{id}/pay-seller": {
+      "post": {
+        "operationId": "demoPaySeller",
+        "description": "Owner or active facility Staff TRANSFER_PAYOUT; no Customer/Admin execution. Server N=P-F and payee A. Direct PAID/paidAt/paidBy and append-only outcome in one transaction; FAILED retains debt and allows retry. B rights never wait for this command. N=0 NOT_REQUIRED has no money event.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_.:-]{1,100}$"
+            },
+            "description": "Keep the same key when retrying an ambiguous response. A definitive FAILED outcome may be retried with a new key."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DemoMoneyOutcome"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Server-recorded application result. DEMO never requires a bank account or real funds.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/DemoSettlement"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "data",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Invalid or revoked session"
+          },
+          "403": {
+            "description": "Wrong actor, facility or current grant"
+          },
+          "409": {
+            "description": "Stale terms, state or conflicting idempotency payload"
+          }
+        }
+      }
+    },
+    "/bookings/demo-finance/refunds/{id}/complete": {
+      "post": {
+        "operationId": "demoCompleteRefund",
+        "description": "Owner or active facility Staff BOOKING_REFUND. Direct REFUNDED/refundedAt/refundedBy, or FAILED retaining entitlement. Policy H uses accepted r; authoritative ABORTED after collection returns full P independent from x/r. Walk-in refund recipient is Guest, not Staff; H=0 NO_REFUND has no money event.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_.:-]{1,100}$"
+            },
+            "description": "Keep the same key when retrying an ambiguous response. A definitive FAILED outcome may be retried with a new key."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DemoMoneyOutcome"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Server-recorded application result. DEMO never requires a bank account or real funds.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/DemoRefund"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "data",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Invalid or revoked session"
+          },
+          "403": {
+            "description": "Wrong actor, facility or current grant"
+          },
+          "409": {
+            "description": "Stale terms, state or conflicting idempotency payload"
+          }
+        }
+      }
+    },
+    "/bookings/admission": {
+      "get": {
+        "operationId": "getMyBookingAdmission",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Private current reservation resources of the authenticated customer.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/AdmissionStatus"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid session"
+          },
+          "403": {
+            "description": "Customer role required"
+          },
+          "503": {
+            "description": "Authority unavailable"
+          }
+        }
+      }
+    },
+    "/bookings/quote": {
+      "post": {
+        "operationId": "previewBookingInterval",
+        "summary": "Preview the current interval price and adjacent free gaps",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuoteInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Authoritative price with observational short-gap advice; creates no hold",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Quote"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid interval"
+          },
+          "409": {
+            "description": "Schedule changed or interval unavailable"
+          },
+          "503": {
+            "description": "Dependency unavailable"
+          }
+        }
+      }
+    },
+    "/bookings/{id}/check-in-guest": {
+      "post": {
+        "operationId": "checkInCounterGuest",
+        "summary": "Confirm paid counter guest attendance without issuing a code",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Booking"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "message",
+                    "data",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Invalid session"
+          },
+          "403": {
+            "description": "Not authorized"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "409": {
+            "description": "Conflict, expired hold or blocked policy"
+          }
+        },
+        "description": "Requires BOOKING_CHECK_IN at the booking facility, OFFLINE_COUNTER with no Customer holder, confirmed status, fully verified original court payment, check-in time window and no frozen transfer. Rejects online or linked-Customer bookings. Returns CHECKED_IN with bookingCode omitted/null; Staff never becomes the holder."
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "Slot": {
+        "type": "object",
+        "properties": {
+          "startsAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endsAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "ELIGIBLE",
+              "AVAILABLE",
+              "BLOCKED"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true
+          },
+          "amount": {
+            "type": "number",
+            "minimum": 0,
+            "exclusiveMinimum": false,
+            "nullable": true
+          },
+          "currency": {
+            "type": "string"
+          },
+          "ruleId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "ruleVersion": {
+            "type": "integer"
+          },
+          "ruleLabel": {
+            "type": "string",
+            "nullable": true
+          },
+          "pricePerHour": {
+            "type": "integer",
+            "minimum": 1,
+            "nullable": true
+          },
+          "durationMinutes": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "startsAt",
+          "endsAt",
+          "state",
+          "reason",
+          "amount",
+          "currency",
+          "ruleId",
+          "ruleVersion",
+          "ruleLabel"
+        ]
+      },
+      "Quote": {
+        "type": "object",
+        "properties": {
+          "facilityId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "courtId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "startsAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endsAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "amount": {
+            "type": "number",
+            "minimum": 0,
+            "exclusiveMinimum": true
+          },
+          "currency": {
+            "type": "string"
+          },
+          "timezone": {
+            "type": "string"
+          },
+          "segments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Slot"
+            }
+          },
+          "quoteVersion": {
+            "type": "integer",
+            "enum": [
+              1,
+              2
+            ]
+          },
+          "pricingMode": {
+            "type": "string",
+            "enum": [
+              "LEGACY_SLOT",
+              "HOURLY_INTERVAL_V1"
+            ]
+          },
+          "pricingRevision": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "policyVersion": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "durationMinutes": {
+            "type": "integer",
+            "minimum": 60,
+            "maximum": 240
+          },
+          "quoteHash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "code": {
+                  "type": "string"
+                },
+                "startsAt": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "endsAt": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              },
+              "required": [
+                "code",
+                "startsAt",
+                "endsAt"
+              ]
+            }
+          },
+          "suggestions": {
+            "type": "array",
+            "maxItems": 3,
+            "items": {
+              "$ref": "#/components/schemas/QuoteInput"
+            }
+          }
+        },
+        "required": [
+          "facilityId",
+          "courtId",
+          "startsAt",
+          "endsAt",
+          "amount",
+          "currency",
+          "timezone",
+          "segments"
+        ]
+      },
+      "Preview": {
+        "type": "object",
+        "properties": {
+          "facilityId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "courtId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "timezone": {
+            "type": "string"
+          },
+          "slots": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Slot"
+            }
+          },
+          "pricingMode": {
+            "type": "string",
+            "enum": [
+              "LEGACY_SLOT",
+              "HOURLY_INTERVAL_V1"
+            ]
+          },
+          "selectionStepMinutes": {
+            "type": "integer",
+            "nullable": true
+          },
+          "minimumMinutes": {
+            "type": "integer",
+            "nullable": true
+          },
+          "maximumMinutes": {
+            "type": "integer",
+            "nullable": true
+          },
+          "policyVersion": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "facilityId",
+          "courtId",
+          "date",
+          "timezone",
+          "slots"
+        ]
+      },
+      "HoldInput": {
+        "type": "object",
+        "properties": {
+          "courtId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "startsAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endsAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expectedAmount": {
+            "type": "number"
+          },
+          "quoteHash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        },
+        "required": [
+          "courtId",
+          "startsAt",
+          "endsAt",
+          "expectedAmount"
+        ]
+      },
+      "Hold": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "courtId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "facilityId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "holderId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "startsAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endsAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "state": {
+            "type": "string"
+          },
+          "quote": {
+            "$ref": "#/components/schemas/Quote"
+          }
+        },
+        "required": [
+          "id",
+          "courtId",
+          "facilityId",
+          "holderId",
+          "startsAt",
+          "endsAt",
+          "expiresAt",
+          "state",
+          "quote"
+        ]
+      },
+      "CreateInput": {
+        "type": "object",
+        "properties": {
+          "holdId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "guestName": {
+            "type": "string",
+            "nullable": true
+          },
+          "guestPhone": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "holdId"
+        ]
+      },
+      "Booking": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "facilityId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "courtId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "customerId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "currentHolderId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "createdBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "startsAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endsAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "CONFIRMED",
+              "CHECKED_IN",
+              "COMPLETED",
+              "CANCELLED",
+              "EXPIRED"
+            ]
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "ONLINE",
+              "OFFLINE_COUNTER"
+            ]
+          },
+          "guestName": {
+            "type": "string",
+            "nullable": true
+          },
+          "guestPhone": {
+            "type": "string",
+            "nullable": true
+          },
+          "amount": {
+            "type": "number"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "priceSnapshot": {
+            "$ref": "#/components/schemas/Quote"
+          },
+          "holdExpiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "paymentId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "paidAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "checkedInAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "completedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "version": {
+            "type": "integer"
+          },
+          "checkinTokenVersion": {
+            "type": "integer"
+          },
+          "moneyClass": {
+            "type": "string",
+            "enum": [
+              "REAL",
+              "DEMO",
+              "UNKNOWN"
+            ]
+          },
+          "bookingCode": {
+            "type": "string",
+            "nullable": true,
+            "pattern": "^[0-9A-F]{10}$",
+            "description": "Manual check-in credential visible only to the current Customer holder when usage is not frozen. Omitted/null for Owner/Staff operational lists, search, details and mutation responses. Operators enter a code presented by the Customer."
+          }
+        },
+        "required": [
+          "id",
+          "facilityId",
+          "courtId",
+          "customerId",
+          "currentHolderId",
+          "createdBy",
+          "startsAt",
+          "endsAt",
+          "status",
+          "source",
+          "guestName",
+          "guestPhone",
+          "amount",
+          "currency",
+          "priceSnapshot",
+          "holdExpiresAt",
+          "paymentId",
+          "paidAt",
+          "checkedInAt",
+          "completedAt",
+          "version",
+          "checkinTokenVersion"
+        ]
+      },
+      "History": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "action": {
+            "type": "string"
+          },
+          "actorId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "details": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "action",
+          "actorId",
+          "details",
+          "createdAt"
+        ]
+      },
+      "Detail": {
+        "type": "object",
+        "properties": {
+          "booking": {
+            "$ref": "#/components/schemas/Booking"
+          },
+          "history": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/History"
+            }
+          },
+          "checkinToken": {
+            "type": "string",
+            "nullable": true
+          },
+          "checkinQrSvg": {
+            "type": "string",
+            "nullable": true
+          },
+          "resaleConsumed": {
+            "type": "boolean",
+            "description": "Đã dùng quyền chuyển nhượng một lần; không cho đăng lại."
+          }
+        },
+        "required": [
+          "booking",
+          "history",
+          "checkinToken",
+          "checkinQrSvg"
+        ]
+      },
+      "Payable": {
+        "type": "object",
+        "properties": {
+          "bookingId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "payerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "amount": {
+            "type": "number"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "purpose": {
+            "type": "string"
+          },
+          "memberId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "moneyClass": {
+            "type": "string",
+            "enum": [
+              "REAL",
+              "DEMO",
+              "UNKNOWN"
+            ]
+          },
+          "receiverRevisionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "operatorPayment": {
+            "type": "boolean",
+            "description": "Original counter operator must retain BOOKING_CREATE_COUNTER and BOOKING_PAYMENT_COUNTER for REAL."
+          },
+          "facilityId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "receiverOwnerId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "source": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "bookingId",
+          "payerId",
+          "amount",
+          "currency",
+          "expiresAt",
+          "purpose",
+          "memberId"
+        ]
+      },
+      "CancelInput": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "reason"
+        ]
+      },
+      "CheckinInput": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "token"
+        ]
+      },
+      "CreateGroup": {
+        "type": "object",
+        "required": [
+          "holdId",
+          "maxMembers"
+        ],
+        "properties": {
+          "holdId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 180
+          },
+          "maxMembers": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50
+          }
+        }
+      },
+      "JoinGroup": {
+        "type": "object",
+        "required": [
+          "code"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        }
+      },
+      "GroupMember": {
+        "type": "object",
+        "required": [
+          "id",
+          "userId",
+          "displayName",
+          "active",
+          "amountDue",
+          "amountPaid",
+          "paymentState",
+          "reminderEligible"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "amountDue": {
+            "type": "number",
+            "minimum": 0
+          },
+          "amountPaid": {
+            "type": "number",
+            "minimum": 0
+          },
+          "paymentState": {
+            "type": "string",
+            "enum": [
+              "UNPAID",
+              "WAITING_FOR_PAYMENT",
+              "PAID",
+              "PAID_BY_OWNER"
+            ]
+          },
+          "paymentRequestedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "lastReminderAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Last successful local outbox acceptance, not delivery confirmation; null for legacy/never reminded members."
+          },
+          "nextReminderAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Server/config derived earliest next acceptance."
+          },
+          "reminderEligible": {
+            "type": "boolean",
+            "description": "Current server eligibility; submission revalidates under the payment lock."
+          },
+          "reminderBlockedReason": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "SELF",
+              "WINDOW_CLOSED",
+              "NO_ALLOCATION",
+              "PAID",
+              "COOLDOWN",
+              "NOT_MEMBER"
+            ]
+          }
+        }
+      },
+      "Group": {
+        "type": "object",
+        "required": [
+          "id",
+          "ownerId",
+          "name",
+          "state",
+          "deadline",
+          "maxMembers",
+          "allocationsLocked",
+          "booking",
+          "members",
+          "totalPaid"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "ownerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "GROUP_PENDING",
+              "CONFIRMED",
+              "GROUP_EXPIRED",
+              "GROUP_CANCELLED"
+            ]
+          },
+          "deadline": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "maxMembers": {
+            "type": "integer"
+          },
+          "allocationsLocked": {
+            "type": "boolean"
+          },
+          "booking": {
+            "$ref": "#/components/schemas/Booking"
+          },
+          "members": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GroupMember"
+            }
+          },
+          "totalPaid": {
+            "type": "number",
+            "minimum": 0
+          }
+        }
+      },
+      "GroupInvite": {
+        "type": "object",
+        "required": [
+          "code",
+          "path",
+          "qrSvg",
+          "expiresAt"
+        ],
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "qrSvg": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "qrPngDataUrl": {
+            "description": "640px PNG data URL for downloading and scanning the invitation",
+            "type": "string"
+          }
+        }
+      },
+      "GroupAllocation": {
+        "type": "object",
+        "required": [
+          "memberId",
+          "amount"
+        ],
+        "properties": {
+          "memberId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "amount": {
+            "type": "number",
+            "minimum": 0,
+            "multipleOf": 1
+          }
+        }
+      },
+      "GroupSplit": {
+        "type": "object",
+        "required": [
+          "mode"
+        ],
+        "properties": {
+          "mode": {
+            "type": "string",
+            "enum": [
+              "EQUAL",
+              "CUSTOM"
+            ]
+          },
+          "allocations": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/GroupAllocation"
+            },
+            "nullable": true
+          }
+        }
+      },
+      "DiscoveryFacilitySummary": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "addressLine",
+          "provinceCode",
+          "province",
+          "wardCode",
+          "ward",
+          "timezone",
+          "latitude",
+          "longitude",
+          "amenities"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "addressLine": {
+            "type": "string",
+            "description": "House number, street and additional address details only; administrative units are stored separately."
+          },
+          "provinceCode": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 2,
+            "pattern": "^[0-9]{2}$",
+            "description": "Current Vietnam province/city code from Open Admin Data. Keep leading zeroes. Null on an unmapped legacy address until its administrative units are selected again.",
+            "nullable": true
+          },
+          "province": {
+            "type": "string",
+            "description": "Canonical current province/city display name."
+          },
+          "wardCode": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 5,
+            "pattern": "^[0-9]{5}$",
+            "description": "Current Vietnam commune/ward code from Open Admin Data. Must belong to provinceCode; keep leading zeroes. Null on an unmapped legacy address until its administrative units are selected again.",
+            "nullable": true
+          },
+          "ward": {
+            "type": "string",
+            "description": "Canonical current commune/ward display name."
+          },
+          "timezone": {
+            "type": "string"
+          },
+          "latitude": {
+            "type": "number",
+            "nullable": true
+          },
+          "longitude": {
+            "type": "number",
+            "nullable": true
+          },
+          "amenities": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "description": "Only public facility fields; no owner/staff/customer identifiers or personal contacts."
+      },
+      "DiscoveryResult": {
+        "type": "object",
+        "required": [
+          "facility",
+          "courtId",
+          "courtName",
+          "sportCategoryId",
+          "sportName",
+          "date",
+          "fromPrice",
+          "currency",
+          "availableSlots",
+          "firstStartsAt",
+          "firstEndsAt",
+          "distanceKm"
+        ],
+        "properties": {
+          "facility": {
+            "$ref": "#/components/schemas/DiscoveryFacilitySummary"
+          },
+          "courtId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "courtName": {
+            "type": "string"
+          },
+          "sportCategoryId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sportName": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "fromPrice": {
+            "type": "number",
+            "minimum": 0
+          },
+          "currency": {
+            "type": "string"
+          },
+          "availableSlots": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "firstStartsAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "firstEndsAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "distanceKm": {
+            "type": "number",
+            "nullable": true,
+            "minimum": 0
+          }
+        }
+      },
+      "DiscoverySearchResult": {
+        "type": "object",
+        "required": [
+          "items",
+          "truncated"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 100,
+            "items": {
+              "$ref": "#/components/schemas/DiscoveryResult"
+            }
+          },
+          "truncated": {
+            "type": "boolean",
+            "description": "A scan/display limit was reached. Narrow the filters."
+          }
+        }
+      },
+      "DiscoverySearchResponse": {
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/DiscoverySearchResult"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "PaymentReminderSelection": {
+        "type": "object",
+        "description": "Choose unique memberIds (1..50), or remindAll=true without memberIds. Server resolves amount, deadline and payment state. Self reminders excluded. Configured per-member cooldown plus payment lock prevents concurrent bursts; no Idempotency-Key required.",
+        "properties": {
+          "memberIds": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 50,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "remindAll": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        "not": {
+          "anyOf": [
+            {
+              "required": [
+                "memberIds",
+                "remindAll"
+              ],
+              "properties": {
+                "remindAll": {
+                  "enum": [
+                    true
+                  ]
+                }
+              }
+            },
+            {
+              "not": {
+                "anyOf": [
+                  {
+                    "required": [
+                      "memberIds"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "remindAll"
+                    ],
+                    "properties": {
+                      "remindAll": {
+                        "enum": [
+                          true
+                        ]
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "PaymentReminderMemberResult": {
+        "type": "object",
+        "required": [
+          "memberId",
+          "outcome"
+        ],
+        "properties": {
+          "memberId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "outcome": {
+            "type": "string",
+            "enum": [
+              "ACCEPTED",
+              "SKIPPED"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "SELF",
+              "WINDOW_CLOSED",
+              "NO_ALLOCATION",
+              "PAID",
+              "COOLDOWN",
+              "NOT_MEMBER"
+            ]
+          },
+          "lastReminderAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "nextReminderAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        }
+      },
+      "PaymentReminderResult": {
+        "type": "object",
+        "required": [
+          "acceptedCount",
+          "skippedCount",
+          "members"
+        ],
+        "properties": {
+          "acceptedCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "skippedCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "members": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PaymentReminderMemberResult"
+            }
+          }
+        }
+      },
+      "FacilityReportMoneyClass": {
+        "type": "string",
+        "enum": [
+          "REAL",
+          "DEMO",
+          "UNKNOWN"
+        ]
+      },
+      "FacilityReportAvailability": {
+        "type": "string",
+        "enum": [
+          "COMPLETE",
+          "PARTIAL",
+          "UNAVAILABLE"
+        ]
+      },
+      "FacilityReportWindow": {
+        "type": "object",
+        "required": [
+          "fromDate",
+          "toDate",
+          "from",
+          "to",
+          "timezone",
+          "interval"
+        ],
+        "properties": {
+          "fromDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "toDate": {
+            "type": "string",
+            "format": "date"
+          },
+          "from": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "to": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "timezone": {
+            "type": "string"
+          },
+          "interval": {
+            "type": "string",
+            "enum": [
+              "[from,to)"
+            ]
+          }
+        }
+      },
+      "FacilityReportCoverage": {
+        "type": "object",
+        "required": [
+          "source",
+          "availability",
+          "verifiedCount",
+          "unverifiedCount",
+          "capturedAt",
+          "reasons"
+        ],
+        "properties": {
+          "source": {
+            "type": "string"
+          },
+          "availability": {
+            "$ref": "#/components/schemas/FacilityReportAvailability"
+          },
+          "verifiedCount": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "unverifiedCount": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "capturedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "reasons": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "FacilityReportMoneyTotals": {
+        "type": "object",
+        "required": [
+          "currency",
+          "moneyClass",
+          "gross",
+          "policyRefundExecuted",
+          "afterRefund",
+          "refundDue",
+          "refundInFlight",
+          "refundFundingPending",
+          "reviewAmount",
+          "availability"
+        ],
+        "properties": {
+          "currency": {
+            "type": "string"
+          },
+          "moneyClass": {
+            "$ref": "#/components/schemas/FacilityReportMoneyClass"
+          },
+          "gross": {
+            "type": "string",
+            "pattern": "^-?[0-9]+(?:\\.[0-9]+)?$",
+            "example": "120000.00",
+            "nullable": true
+          },
+          "policyRefundExecuted": {
+            "type": "string",
+            "pattern": "^-?[0-9]+(?:\\.[0-9]+)?$",
+            "example": "120000.00",
+            "nullable": true
+          },
+          "afterRefund": {
+            "type": "string",
+            "pattern": "^-?[0-9]+(?:\\.[0-9]+)?$",
+            "example": "120000.00",
+            "nullable": true
+          },
+          "refundDue": {
+            "type": "string",
+            "pattern": "^-?[0-9]+(?:\\.[0-9]+)?$",
+            "example": "120000.00",
+            "nullable": true
+          },
+          "refundInFlight": {
+            "type": "string",
+            "pattern": "^-?[0-9]+(?:\\.[0-9]+)?$",
+            "example": "120000.00",
+            "nullable": true
+          },
+          "refundFundingPending": {
+            "type": "string",
+            "pattern": "^-?[0-9]+(?:\\.[0-9]+)?$",
+            "example": "120000.00",
+            "nullable": true
+          },
+          "reviewAmount": {
+            "type": "string",
+            "pattern": "^-?[0-9]+(?:\\.[0-9]+)?$",
+            "example": "120000.00",
+            "nullable": true
+          },
+          "availability": {
+            "$ref": "#/components/schemas/FacilityReportAvailability"
+          }
+        }
+      },
+      "FacilityReportSummary": {
+        "type": "object",
+        "required": [
+          "bookingCount",
+          "fullyPaidBookingCount",
+          "bookedMinutes",
+          "usedMinutes",
+          "cancelledCount",
+          "expiredCount",
+          "money"
+        ],
+        "properties": {
+          "bookingCount": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "fullyPaidBookingCount": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "bookedMinutes": {
+            "type": "string",
+            "pattern": "^-?[0-9]+(?:\\.[0-9]+)?$",
+            "example": "120000.00"
+          },
+          "usedMinutes": {
+            "type": "string",
+            "pattern": "^-?[0-9]+(?:\\.[0-9]+)?$",
+            "example": "120000.00"
+          },
+          "cancelledCount": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "expiredCount": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "money": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FacilityReportMoneyTotals"
+            }
+          }
+        }
+      },
+      "FacilityReportDaily": {
+        "type": "object",
+        "required": [
+          "date",
+          "money"
+        ],
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "money": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FacilityReportMoneyTotals"
+            }
+          }
+        }
+      },
+      "FacilityReportCourt": {
+        "type": "object",
+        "required": [
+          "courtId",
+          "courtName",
+          "bookingCount",
+          "fullyPaidBookingCount",
+          "bookedMinutes",
+          "usedMinutes",
+          "cancelledCount",
+          "expiredCount",
+          "money"
+        ],
+        "properties": {
+          "courtId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "courtName": {
+            "type": "string"
+          },
+          "bookingCount": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "fullyPaidBookingCount": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "bookedMinutes": {
+            "type": "string",
+            "pattern": "^-?[0-9]+(?:\\.[0-9]+)?$",
+            "example": "120000.00"
+          },
+          "usedMinutes": {
+            "type": "string",
+            "pattern": "^-?[0-9]+(?:\\.[0-9]+)?$",
+            "example": "120000.00"
+          },
+          "cancelledCount": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "expiredCount": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "money": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FacilityReportMoneyTotals"
+            }
+          }
+        }
+      },
+      "FacilityReportRefundPolicy": {
+        "type": "object",
+        "required": [
+          "requestId",
+          "policyVersion",
+          "rateBps",
+          "baseAmount",
+          "targetAmount",
+          "reason",
+          "authorizedBy"
+        ],
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "policyVersion": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "rateBps": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 10000
+          },
+          "baseAmount": {
+            "type": "string",
+            "pattern": "^-?[0-9]+(?:\\.[0-9]+)?$",
+            "example": "120000.00"
+          },
+          "targetAmount": {
+            "type": "string",
+            "pattern": "^-?[0-9]+(?:\\.[0-9]+)?$",
+            "example": "120000.00"
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "FACILITY_POLICY_CANCELLATION"
+            ]
+          },
+          "authorizedBy": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          }
+        }
+      },
+      "FacilityReportTransaction": {
+        "type": "object",
+        "required": [
+          "factId",
+          "kind",
+          "direction",
+          "effectiveAt",
+          "recordedAt",
+          "bookingId",
+          "bookingReference",
+          "courtId",
+          "courtName",
+          "startsAt",
+          "endsAt",
+          "source",
+          "purpose",
+          "paymentId",
+          "amount",
+          "currency",
+          "moneyClass",
+          "state",
+          "review",
+          "cancelled",
+          "refundPolicy"
+        ],
+        "properties": {
+          "factId": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "COURT_COLLECTION",
+              "FACILITY_POLICY_REFUND"
+            ]
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "IN",
+              "OUT"
+            ]
+          },
+          "effectiveAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "recordedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "bookingId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "bookingReference": {
+            "type": "string"
+          },
+          "courtId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "courtName": {
+            "type": "string"
+          },
+          "startsAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endsAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "source": {
+            "type": "string"
+          },
+          "purpose": {
+            "type": "string"
+          },
+          "paymentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "amount": {
+            "type": "string",
+            "pattern": "^-?[0-9]+(?:\\.[0-9]+)?$",
+            "example": "120000.00"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "moneyClass": {
+            "$ref": "#/components/schemas/FacilityReportMoneyClass"
+          },
+          "state": {
+            "type": "string"
+          },
+          "review": {
+            "type": "boolean"
+          },
+          "cancelled": {
+            "type": "boolean"
+          },
+          "refundPolicy": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/FacilityReportRefundPolicy"
+              }
+            ],
+            "nullable": true
+          }
+        }
+      },
+      "FacilityReportTransactions": {
+        "type": "object",
+        "required": [
+          "window",
+          "asOf",
+          "sourceCoverage",
+          "items",
+          "nextCursor"
+        ],
+        "properties": {
+          "window": {
+            "$ref": "#/components/schemas/FacilityReportWindow"
+          },
+          "asOf": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "sourceCoverage": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FacilityReportCoverage"
+            }
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FacilityReportTransaction"
+            }
+          },
+          "nextCursor": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "FacilityReportDashboard": {
+        "type": "object",
+        "required": [
+          "facilityId",
+          "window",
+          "asOf",
+          "dateBasis",
+          "sourceCoverage",
+          "moneyAvailability",
+          "summary",
+          "collectionsByDay",
+          "courtPerformance",
+          "statusBreakdown",
+          "transactions"
+        ],
+        "properties": {
+          "facilityId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "window": {
+            "$ref": "#/components/schemas/FacilityReportWindow"
+          },
+          "asOf": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "dateBasis": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "sourceCoverage": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FacilityReportCoverage"
+            }
+          },
+          "moneyAvailability": {
+            "$ref": "#/components/schemas/FacilityReportAvailability"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/FacilityReportSummary"
+          },
+          "collectionsByDay": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FacilityReportDaily"
+            }
+          },
+          "courtPerformance": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FacilityReportCourt"
+            }
+          },
+          "statusBreakdown": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 0
+            }
+          },
+          "transactions": {
+            "$ref": "#/components/schemas/FacilityReportTransactions"
+          }
+        }
+      },
+      "CounterInput": {
+        "type": "object",
+        "required": [
+          "courtId",
+          "startsAt",
+          "endsAt",
+          "expectedAmount",
+          "guestName",
+          "guestPhone"
+        ],
+        "properties": {
+          "courtId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "startsAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endsAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expectedAmount": {
+            "type": "number"
+          },
+          "guestName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 180
+          },
+          "guestPhone": {
+            "type": "string",
+            "pattern": "^\\+?[0-9]{8,15}$"
+          },
+          "paymentMethod": {
+            "type": "string",
+            "enum": [
+              "DEMO"
+            ]
+          },
+          "refundPolicyHash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "description": "Required for new atomic counter bookings. Review the public facility policy first; a missing/stale hash returns 409. Omission is accepted only when replaying an already-created legacy booking with its original key and payload."
+          },
+          "quoteHash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        }
+      },
+      "LegacyRefundAdoptionInput": {
+        "type": "object",
+        "required": [
+          "expectedBookingVersion",
+          "policyHash",
+          "reason"
+        ],
+        "properties": {
+          "expectedBookingVersion": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "policyHash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "guestConsentReference": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 500
+          }
+        }
+      },
+      "LegacyRefundAdoptionOffer": {
+        "type": "object",
+        "required": [
+          "id",
+          "bookingId",
+          "bookingVersion",
+          "policy",
+          "requiredUsers",
+          "consentedUsers",
+          "reason",
+          "expiresAt",
+          "adopted"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "bookingId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "bookingVersion": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "policy": {
+            "$ref": "facility.yaml#/components/schemas/FacilityRefundPolicy"
+          },
+          "requiredUsers": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "consentedUsers": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "reason": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "adopted": {
+            "type": "boolean"
+          }
+        }
+      },
+      "LegacyRefundPolicyCandidate": {
+        "type": "object",
+        "required": [
+          "bookingId",
+          "status",
+          "amount",
+          "reasons"
+        ],
+        "properties": {
+          "bookingId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "string"
+          },
+          "reasons": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "DemoMoneyOutcome": {
+        "type": "object",
+        "properties": {
+          "outcome": {
+            "type": "string",
+            "enum": [
+              "SUCCESS",
+              "FAILED"
+            ]
+          }
+        },
+        "required": [
+          "outcome"
+        ],
+        "description": "Only outcome is client-selected. Amount, recipient, facility, mode and immutable entitlement are resolved by the server. Only DEMO records are executable."
+      },
+      "DemoRefundAllocation": {
+        "type": "object",
+        "properties": {
+          "paymentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "payerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "baseAmount": {
+            "type": "string",
+            "pattern": "^-?[0-9]+(?:\\.[0-9]+)?$",
+            "readOnly": true,
+            "description": "Exact VND decimal string. DEMO application amount; no real transfer of funds."
+          },
+          "refundAmount": {
+            "type": "string",
+            "pattern": "^-?[0-9]+(?:\\.[0-9]+)?$",
+            "readOnly": true,
+            "description": "Exact VND decimal string. DEMO application amount; no real transfer of funds."
+          }
+        },
+        "required": [
+          "paymentId",
+          "payerId",
+          "baseAmount",
+          "refundAmount"
+        ]
+      },
+      "DemoSettlement": {
+        "type": "object",
+        "properties": {
+          "acquisitionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "bookingId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "facilityId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "courtId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "receiverOwnerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sellerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "buyerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "paymentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "DEMO"
+            ]
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "VND"
+            ]
+          },
+          "amount": {
+            "type": "string",
+            "pattern": "^-?[0-9]+(?:\\.[0-9]+)?$",
+            "readOnly": true,
+            "description": "Exact VND decimal string. DEMO application amount; no real transfer of funds."
+          },
+          "feeBps": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 10000,
+            "readOnly": true
+          },
+          "policyVersion": {
+            "type": "integer",
+            "format": "int64",
+            "readOnly": true
+          },
+          "feeAmount": {
+            "type": "string",
+            "pattern": "^-?[0-9]+(?:\\.[0-9]+)?$",
+            "readOnly": true,
+            "description": "Exact VND decimal string. DEMO application amount; no real transfer of funds."
+          },
+          "sellerNetAmount": {
+            "type": "string",
+            "pattern": "^-?[0-9]+(?:\\.[0-9]+)?$",
+            "readOnly": true,
+            "description": "Exact VND decimal string. DEMO application amount; no real transfer of funds."
+          },
+          "payoutState": {
+            "type": "string",
+            "enum": [
+              "UNPAID",
+              "FAILED",
+              "PAID",
+              "NOT_REQUIRED"
+            ]
+          },
+          "handoffAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "paidAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "performedBy": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "readOnly": true
+          }
+        },
+        "required": [
+          "acquisitionId",
+          "bookingId",
+          "facilityId",
+          "mode",
+          "amount",
+          "feeBps",
+          "feeAmount",
+          "sellerNetAmount",
+          "payoutState",
+          "handoffAt"
+        ]
+      },
+      "DemoRefund": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "bookingId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "facilityId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "courtId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "acquisitionId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "quoteId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "DEMO"
+            ]
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "VND"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "POLICY_CANCELLATION",
+              "TECHNICAL_TRANSFER_FAILURE"
+            ]
+          },
+          "baseAmount": {
+            "type": "string",
+            "pattern": "^-?[0-9]+(?:\\.[0-9]+)?$",
+            "readOnly": true,
+            "description": "Exact VND decimal string. DEMO application amount; no real transfer of funds."
+          },
+          "rateBps": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 10000,
+            "readOnly": true
+          },
+          "targetAmount": {
+            "type": "string",
+            "pattern": "^-?[0-9]+(?:\\.[0-9]+)?$",
+            "readOnly": true,
+            "description": "Exact VND decimal string. DEMO application amount; no real transfer of funds."
+          },
+          "allocations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DemoRefundAllocation"
+            }
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "FAILED",
+              "REFUNDED",
+              "NO_REFUND"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "refundedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "recipientKind": {
+            "type": "string",
+            "enum": [
+              "GUEST"
+            ]
+          },
+          "recipientLabel": {
+            "type": "string"
+          },
+          "yourRefundAmount": {
+            "type": "string",
+            "pattern": "^-?[0-9]+(?:\\.[0-9]+)?$",
+            "readOnly": true,
+            "description": "Exact VND decimal string. DEMO application amount; no real transfer of funds."
+          },
+          "performedBy": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "readOnly": true
+          }
+        },
+        "required": [
+          "id",
+          "bookingId",
+          "facilityId",
+          "mode",
+          "reason",
+          "baseAmount",
+          "rateBps",
+          "targetAmount",
+          "allocations",
+          "state",
+          "createdAt"
+        ]
+      },
+      "DemoFacilityFinance": {
+        "type": "object",
+        "properties": {
+          "mode": {
+            "type": "string",
+            "enum": [
+              "DEMO"
+            ]
+          },
+          "canPaySeller": {
+            "type": "boolean"
+          },
+          "canRefund": {
+            "type": "boolean"
+          },
+          "settlements": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DemoSettlement"
+            }
+          },
+          "refunds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DemoRefund"
+            }
+          }
+        },
+        "required": [
+          "mode",
+          "canPaySeller",
+          "canRefund",
+          "settlements",
+          "refunds"
+        ]
+      },
+      "DemoParticipantFinance": {
+        "type": "object",
+        "properties": {
+          "mode": {
+            "type": "string",
+            "enum": [
+              "DEMO"
+            ]
+          },
+          "settlements": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DemoSettlement"
+            }
+          },
+          "refunds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DemoRefund"
+            }
+          }
+        },
+        "required": [
+          "mode",
+          "settlements",
+          "refunds"
+        ]
+      },
+      "DemoReportMoney": {
+        "type": "object",
+        "properties": {
+          "courtCollected": {
+            "type": "string",
+            "pattern": "^-?[0-9]+(?:\\.[0-9]+)?$",
+            "readOnly": true,
+            "description": "Exact VND decimal string in the selected REAL or DEMO cohort; no SportHub revenue."
+          },
+          "transferFees": {
+            "type": "string",
+            "pattern": "^-?[0-9]+(?:\\.[0-9]+)?$",
+            "readOnly": true,
+            "description": "Exact VND decimal string in the selected REAL or DEMO cohort; no SportHub revenue."
+          },
+          "operatingRevenue": {
+            "type": "string",
+            "pattern": "^-?[0-9]+(?:\\.[0-9]+)?$",
+            "readOnly": true,
+            "description": "Exact VND decimal string in the selected REAL or DEMO cohort; no SportHub revenue."
+          },
+          "policyRefunded": {
+            "type": "string",
+            "pattern": "^-?[0-9]+(?:\\.[0-9]+)?$",
+            "readOnly": true,
+            "description": "Exact VND decimal string in the selected REAL or DEMO cohort; no SportHub revenue."
+          },
+          "afterRefund": {
+            "type": "string",
+            "pattern": "^-?[0-9]+(?:\\.[0-9]+)?$",
+            "readOnly": true,
+            "description": "Exact VND decimal string in the selected REAL or DEMO cohort; no SportHub revenue."
+          },
+          "transferCollected": {
+            "type": "string",
+            "pattern": "^-?[0-9]+(?:\\.[0-9]+)?$",
+            "readOnly": true,
+            "description": "Exact VND decimal string in the selected REAL or DEMO cohort; no SportHub revenue."
+          },
+          "sellerPaid": {
+            "type": "string",
+            "pattern": "^-?[0-9]+(?:\\.[0-9]+)?$",
+            "readOnly": true,
+            "description": "Exact VND decimal string in the selected REAL or DEMO cohort; no SportHub revenue."
+          },
+          "sellerDue": {
+            "type": "string",
+            "pattern": "^-?[0-9]+(?:\\.[0-9]+)?$",
+            "readOnly": true,
+            "description": "Exact VND decimal string in the selected REAL or DEMO cohort; no SportHub revenue."
+          },
+          "refundDue": {
+            "type": "string",
+            "pattern": "^-?[0-9]+(?:\\.[0-9]+)?$",
+            "readOnly": true,
+            "description": "Exact VND decimal string in the selected REAL or DEMO cohort; no SportHub revenue."
+          },
+          "technicalRefunded": {
+            "type": "string",
+            "pattern": "^-?[0-9]+(?:\\.[0-9]+)?$",
+            "readOnly": true,
+            "description": "Exact VND decimal string in the selected REAL or DEMO cohort; no SportHub revenue."
+          },
+          "bankCollected": {
+            "type": "string",
+            "pattern": "^-?[0-9]+(?:\\.[0-9]+)?$",
+            "readOnly": true,
+            "description": "REAL native cash once per verified credit at bankTime; includes applied and unapplied money."
+          },
+          "unappliedCollected": {
+            "type": "string",
+            "pattern": "^-?[0-9]+(?:\\.[0-9]+)?$",
+            "readOnly": true,
+            "description": "Part of native cash not applied as of obligationCutoff; includes extra, partial, expired and failed application money."
+          }
+        },
+        "required": [
+          "courtCollected",
+          "transferFees",
+          "operatingRevenue",
+          "policyRefunded",
+          "afterRefund",
+          "transferCollected",
+          "sellerPaid",
+          "sellerDue",
+          "refundDue",
+          "technicalRefunded",
+          "bankCollected",
+          "unappliedCollected"
+        ],
+        "description": "R courtCollected, F transferFees, H successful policyRefunded. operatingRevenue=R+F; afterRefund=R+F-H. P transferCollected and N sellerPaid are separate cashflow. Technical refunds are separate from H. Due balances include older liabilities before obligationCutoff."
+      },
+      "DemoReportSummary": {
+        "type": "object",
+        "properties": {
+          "bookingCount": {
+            "type": "integer"
+          },
+          "fullyPaidBookingCount": {
+            "type": "integer"
+          },
+          "bookedMinutes": {
+            "type": "string",
+            "pattern": "^-?[0-9]+(?:\\.[0-9]+)?$",
+            "readOnly": true,
+            "description": "Exact scheduled/used minutes decimal string."
+          },
+          "usedMinutes": {
+            "type": "string",
+            "pattern": "^-?[0-9]+(?:\\.[0-9]+)?$",
+            "readOnly": true,
+            "description": "Exact scheduled/used minutes decimal string."
+          },
+          "cancelledCount": {
+            "type": "integer"
+          },
+          "expiredCount": {
+            "type": "integer"
+          },
+          "money": {
+            "$ref": "#/components/schemas/DemoReportMoney"
+          }
+        },
+        "required": [
+          "bookingCount",
+          "fullyPaidBookingCount",
+          "bookedMinutes",
+          "usedMinutes",
+          "cancelledCount",
+          "expiredCount",
+          "money"
+        ]
+      },
+      "DemoReportCourt": {
+        "type": "object",
+        "properties": {
+          "courtId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "courtName": {
+            "type": "string"
+          },
+          "bookingCount": {
+            "type": "integer"
+          },
+          "fullyPaidBookingCount": {
+            "type": "integer"
+          },
+          "bookedMinutes": {
+            "type": "string",
+            "pattern": "^-?[0-9]+(?:\\.[0-9]+)?$",
+            "readOnly": true,
+            "description": "Exact scheduled/used minutes decimal string."
+          },
+          "usedMinutes": {
+            "type": "string",
+            "pattern": "^-?[0-9]+(?:\\.[0-9]+)?$",
+            "readOnly": true,
+            "description": "Exact scheduled/used minutes decimal string."
+          },
+          "cancelledCount": {
+            "type": "integer"
+          },
+          "expiredCount": {
+            "type": "integer"
+          },
+          "money": {
+            "$ref": "#/components/schemas/DemoReportMoney"
+          }
+        },
+        "required": [
+          "courtId",
+          "courtName",
+          "bookingCount",
+          "fullyPaidBookingCount",
+          "bookedMinutes",
+          "usedMinutes",
+          "cancelledCount",
+          "expiredCount",
+          "money"
+        ]
+      },
+      "DemoReportDay": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "courtCollected": {
+            "type": "string",
+            "pattern": "^-?[0-9]+(?:\\.[0-9]+)?$",
+            "readOnly": true,
+            "description": "Exact VND decimal string in the selected REAL or DEMO cohort; no SportHub revenue."
+          },
+          "transferFees": {
+            "type": "string",
+            "pattern": "^-?[0-9]+(?:\\.[0-9]+)?$",
+            "readOnly": true,
+            "description": "Exact VND decimal string in the selected REAL or DEMO cohort; no SportHub revenue."
+          },
+          "policyRefunded": {
+            "type": "string",
+            "pattern": "^-?[0-9]+(?:\\.[0-9]+)?$",
+            "readOnly": true,
+            "description": "Exact VND decimal string in the selected REAL or DEMO cohort; no SportHub revenue."
+          }
+        },
+        "required": [
+          "date",
+          "courtCollected",
+          "transferFees",
+          "policyRefunded"
+        ]
+      },
+      "DemoReportTransaction": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "COURT_COLLECTION",
+              "TRANSFER_COLLECTION",
+              "FACILITY_TRANSFER_FEE",
+              "SELLER_PAYOUT",
+              "POLICY_REFUND",
+              "TECHNICAL_REFUND",
+              "BANK_CREDIT"
+            ]
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "IN",
+              "OUT",
+              "RECOGNITION"
+            ]
+          },
+          "revenueComponent": {
+            "type": "boolean"
+          },
+          "cashflow": {
+            "type": "boolean"
+          },
+          "countsTowardTotals": {
+            "type": "boolean"
+          },
+          "bookingId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "courtId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "courtName": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
+          "purpose": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "SUCCESS",
+              "FAILED",
+              "BANK_VERIFIED"
+            ]
+          },
+          "amount": {
+            "type": "string",
+            "pattern": "^-?[0-9]+(?:\\.[0-9]+)?$",
+            "readOnly": true,
+            "description": "Exact VND decimal string in the selected REAL or DEMO cohort; no SportHub revenue."
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "VND"
+            ]
+          },
+          "effectiveAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "moneyClass": {
+            "type": "string",
+            "enum": [
+              "REAL",
+              "DEMO"
+            ]
+          },
+          "confirmationMethod": {
+            "type": "string",
+            "enum": [
+              "BANK_VERIFIED",
+              "MANUALLY_RECORDED",
+              "HANDOFF_COMMITTED",
+              "SIMULATED"
+            ]
+          },
+          "dateBasis": {
+            "type": "string",
+            "enum": [
+              "bankTime",
+              "paidAt",
+              "confirmedAt",
+              "handoffAt",
+              "demoExecutionAt"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "direction",
+          "revenueComponent",
+          "cashflow",
+          "countsTowardTotals",
+          "bookingId",
+          "courtId",
+          "courtName",
+          "source",
+          "purpose",
+          "state",
+          "amount",
+          "currency",
+          "effectiveAt",
+          "moneyClass",
+          "confirmationMethod",
+          "dateBasis"
+        ]
+      },
+      "DemoReportPage": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "size": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "total": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "totalPages": {
+            "type": "integer"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DemoReportTransaction"
+            }
+          }
+        },
+        "required": [
+          "page",
+          "size",
+          "total",
+          "totalPages",
+          "items"
+        ]
+      },
+      "DemoFacilityDashboard": {
+        "type": "object",
+        "properties": {
+          "facilityId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "window": {
+            "$ref": "#/components/schemas/FacilityReportWindow"
+          },
+          "asOf": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "obligationCutoff": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "REAL",
+              "DEMO"
+            ]
+          },
+          "label": {
+            "type": "string"
+          },
+          "dateBasis": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "moneyAvailability": {
+            "type": "string",
+            "enum": [
+              "COMPLETE",
+              "PARTIAL",
+              "UNAVAILABLE"
+            ]
+          },
+          "reasons": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "summary": {
+            "$ref": "#/components/schemas/DemoReportSummary"
+          },
+          "daily": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DemoReportDay"
+            }
+          },
+          "courts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DemoReportCourt"
+            }
+          },
+          "transactions": {
+            "$ref": "#/components/schemas/DemoReportPage"
+          },
+          "peer": {
+            "$ref": "#/components/schemas/PeerFacilityReport"
+          }
+        },
+        "required": [
+          "facilityId",
+          "window",
+          "asOf",
+          "obligationCutoff",
+          "mode",
+          "label",
+          "dateBasis",
+          "moneyAvailability",
+          "reasons",
+          "summary",
+          "daily",
+          "courts",
+          "transactions",
+          "peer"
+        ]
+      },
+      "RefundDestinationCommand": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "destinationRevisionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "consentReference": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "version",
+          "destinationRevisionId",
+          "consentReference"
+        ]
+      },
+      "BankRefundBinding": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "paymentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "destinationRevisionId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "paymentId",
+          "destinationRevisionId"
+        ]
+      },
+      "DestinationChange": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "destinationRevisionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "consentReference": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "version",
+          "destinationRevisionId",
+          "consentReference",
+          "reason"
+        ]
+      },
+      "QuoteInput": {
+        "type": "object",
+        "properties": {
+          "courtId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "startsAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endsAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "courtId",
+          "startsAt",
+          "endsAt"
+        ]
+      },
+      "AdmissionStatus": {
+        "type": "object",
+        "required": [
+          "policyVersion",
+          "maxConcurrent",
+          "resources",
+          "policyAvailability",
+          "marketPermanent",
+          "strikeCount",
+          "holdBlockedUntil",
+          "onlineBlockedUntil",
+          "marketBlockedUntil"
+        ],
+        "properties": {
+          "policyVersion": {
+            "type": "integer",
+            "enum": [
+              1
+            ]
+          },
+          "maxConcurrent": {
+            "type": "integer",
+            "enum": [
+              1
+            ]
+          },
+          "resources": {
+            "type": "array",
+            "maxItems": 100,
+            "items": {
+              "$ref": "#/components/schemas/AdmissionResource"
+            }
+          },
+          "policyAvailability": {
+            "type": "string",
+            "enum": [
+              "COMPLETE",
+              "UNAVAILABLE",
+              "NOT_ENABLED"
+            ]
+          },
+          "marketPermanent": {
+            "type": "boolean"
+          },
+          "strikeCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "holdBlockedUntil": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "onlineBlockedUntil": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "marketBlockedUntil": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "description": "Private current-user policy/restrictions and active claim references; UNKNOWN cache coverage never grants new admission. Existing paid bookings and cases remain accessible under a restriction."
+      },
+      "AdmissionResource": {
+        "type": "object",
+        "required": [
+          "kind",
+          "resourceId",
+          "expiresAt"
+        ],
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "ONLINE_BOOKING",
+              "PEER_ACQUISITION",
+              "LEGACY_ACQUISITION",
+              "CLAIM_REQUIRES_RECONCILIATION"
+            ]
+          },
+          "resourceId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        }
+      },
+      "PeerReportRow": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "acquisitionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "bookingId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "courtId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "payerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "recipientId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "protocol": {
+            "type": "string",
+            "enum": [
+              "PEER_RESALE_V1"
+            ]
+          },
+          "amount": {
+            "type": "string",
+            "pattern": "^\\d+(\\.\\d+)?$"
+          },
+          "phase": {
+            "type": "string"
+          },
+          "confirmationMethod": {
+            "type": "string",
+            "enum": [
+              "NONE",
+              "BUYER_DECLARED",
+              "COUNTERPARTY_ACKNOWLEDGED",
+              "OWNER_ADJUDICATED"
+            ]
+          },
+          "usageDecision": {
+            "type": "string",
+            "nullable": true
+          },
+          "moneyState": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "declaredAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "decidedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "required": [
+          "acquisitionId",
+          "bookingId",
+          "courtId",
+          "payerId",
+          "recipientId",
+          "protocol",
+          "amount",
+          "phase",
+          "confirmationMethod",
+          "usageDecision",
+          "moneyState",
+          "createdAt",
+          "declaredAt",
+          "decidedAt"
+        ]
+      },
+      "PeerReportPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "page": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "size": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "totalPages": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "items": {
+            "type": "array",
+            "maxItems": 100,
+            "items": {
+              "$ref": "#/components/schemas/PeerReportRow"
+            }
+          }
+        },
+        "required": [
+          "page",
+          "size",
+          "total",
+          "totalPages",
+          "items"
+        ]
+      },
+      "PeerFacilityReport": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "availability": {
+            "type": "string",
+            "enum": [
+              "COMPLETE",
+              "PARTIAL",
+              "UNAVAILABLE",
+              "NOT_APPLICABLE"
+            ]
+          },
+          "reasons": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "dateBasis": {
+            "type": "string"
+          },
+          "openUsageCases": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "openMoneyCases": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "buyerDeclaredAmount": {
+            "type": "string",
+            "pattern": "^\\d+(\\.\\d+)?$"
+          },
+          "sellerAcknowledgedAmount": {
+            "type": "string",
+            "pattern": "^\\d+(\\.\\d+)?$"
+          },
+          "ownerAwardedAmount": {
+            "type": "string",
+            "pattern": "^\\d+(\\.\\d+)?$"
+          },
+          "returnDeclaredAmount": {
+            "type": "string",
+            "pattern": "^\\d+(\\.\\d+)?$"
+          },
+          "returnAcknowledgedAmount": {
+            "type": "string",
+            "pattern": "^\\d+(\\.\\d+)?$"
+          },
+          "transactions": {
+            "$ref": "#/components/schemas/PeerReportPage"
+          },
+          "completedUsageCount": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "availability",
+          "reasons",
+          "dateBasis",
+          "openUsageCases",
+          "openMoneyCases",
+          "buyerDeclaredAmount",
+          "sellerAcknowledgedAmount",
+          "ownerAwardedAmount",
+          "returnDeclaredAmount",
+          "returnAcknowledgedAmount",
+          "transactions",
+          "completedUsageCount"
+        ],
+        "description": "Informational direct B-to-A consideration and A-to-B returns; never facility revenue, bank receipts, transfer fee or Owner seller payable. Owner adjudicates usage only. Exact amount strings; current open cases created before cutoff include pre-period cases."
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Group Booking",
+      "description": "Booking-owned groups and immutable VND allocations; contributions are paid in Payment Service."
+    }
+  ]
+}
